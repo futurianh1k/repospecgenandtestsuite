@@ -1,0 +1,51 @@
+{
+  "//": "프로파일 YAML에 스키마를 붙여 편집 중 인라인 검증과 자동완성을 받는다. redhat.vscode-yaml 확장 필요.",
+  "yaml.schemas": {
+    "./packages/profiles/schema/profile.schema.json": [
+      "packages/profiles/_base/profile.yaml",
+      "packages/profiles/lifecycle/*/profile.yaml",
+      "packages/profiles/industry/*/profile.yaml",
+      "packages/profiles/overlay/*/profile.yaml",
+      "packages/profiles/org/*/profile.yaml"
+    ]
+  },
+  "yaml.validate": true,
+  "yaml.completion": true,
+  "yaml.hover": true,
+  "yaml.format.enable": false,
+
+  "files.associations": {
+    "*.instructions.md": "markdown"
+  },
+  "files.encoding": "utf8",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.autoIndent": "keep"
+  },
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.rulers": [96]
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+
+  "python.analysis.extraPaths": [
+    "./services/orchestrator",
+    "./services/docgen"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": false,
+
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true
+  },
+
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true
+}

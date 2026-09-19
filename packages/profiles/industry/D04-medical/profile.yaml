@@ -1,0 +1,946 @@
+schema_version: "1.0"
+id: D04-medical
+kind: industry
+extends: _base
+name: 의료·헬스케어·의료기기
+description: >
+  디지털의료제품법 체계와 IEC 62304 생명주기를 결합한 의료기기 소프트웨어 프로파일.
+  국내 허가는 디지털의료제품법이 우선하고, IEC 62304는 그 산출물을 구성하는
+  방법론으로 작동한다. 국내 등급(1~4등급)과 62304 안전성 등급(A/B/C)은 독립 판정된다.
+tier: T1
+status: beta
+
+ksic: ["C27", "Q86", "J62"]
+ncs_ref: ["임베디드SW엔지니어링", "응용SW엔지니어링"]
+audit_bodies:
+  - 식품의약품안전처
+  - 식품의약품안전평가원
+  - 의료기기 인증기관
+
+lifecycle_default: v-model
+lifecycle_options: [v-model, hybrid]
+
+risk_scheme:
+  name: "IEC62304_Class"
+  levels: ["A", "B", "C"]
+  secondary: ["1등급", "2등급", "3등급", "4등급"]
+
+id_scheme:
+  software_req: "SRS-{n:03d}"
+  requirement: "SRS-{n:03d}"
+  unit_test: "UT-{req_id}-{n:02d}"
+  risk_item: "RSK-{n:03d}"
+  soup_item: "SOUP-{n:02d}"
+
+output_formats: [docx, xlsx, pdf]
+output_default: docx
+
+default_overlays: [X2, X5]
+
+# ---------------------------------------------------------------------------
+# 표준
+# ---------------------------------------------------------------------------
+standards:
+  - id: "디지털의료제품법"
+    name_ko: "디지털의료제품법"
+    issuer: "식품의약품안전처"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "디지털의료제품법"
+      ministry: "식품의약품안전처"
+      effective: "2025-01"
+      source: "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=259299"
+    system_types: [embedded, web, mobile, ml-ai]
+    procurement: [민간B2B, B2C, 수출]
+    scope: [classification, approval, deliverable]
+    artifacts: ["허가신청서", "기술문서", "안정성 등급 판정서"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    source: "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=259299"
+    confidence: high
+    overlays: [X1, X2]
+
+  - id: "디지털의료제품법 시행규칙"
+    name_ko: "디지털의료제품법 시행규칙"
+    issuer: "식품의약품안전처"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "디지털의료제품법 시행규칙"
+      ministry: "식품의약품안전처"
+      effective: "2025-02-28"
+    scope: [approval, deliverable]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    source: "https://www.law.go.kr/lsInfoP.do?lsiSeq=269581&efYd=20250228"
+    confidence: high
+
+  - id: "식약처 고시 제2025-23호"
+    name_ko: "디지털의료제품 분류 및 등급 지정 등에 관한 규정"
+    issuer: "식품의약품안전처"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "디지털의료제품법"
+      ministry: "식품의약품안전처"
+      effective: "2025-04-07"
+    scope: [classification]
+    artifacts: ["등급 판정 근거서"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "식약처 고시 제2025-25호"
+    name_ko: "디지털의료제품 허가·인증·신고·심사 및 평가 등에 관한 규정"
+    issuer: "식품의약품안전처"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "디지털의료제품법"
+      ministry: "식품의약품안전처"
+      effective: "2025-04-15"
+    scope: [approval]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "디지털의료기기소프트웨어 허가·심사 가이드라인"
+    name_ko: "디지털의료기기소프트웨어 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    risk_trigger:
+      condition: "form == standalone"
+    system_types: [web, mobile, ml-ai]
+    scope: [deliverable, approval]
+    artifacts: ["허가신청서", "첨부서류", "안정성 등급 판정서", "변경사항 심사 목록"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "의료기기 소프트웨어 허가·심사 가이드라인"
+    name_ko: "의료기기 소프트웨어 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    risk_trigger:
+      condition: "form == embedded"
+    system_types: [embedded]
+    scope: [deliverable, approval]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+    note: "2025-05-07 개정으로 내장형 소프트웨어 관련으로 범위가 제한되었다"
+
+  - id: "인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    name_ko: "인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    risk_trigger:
+      condition: "ai_applied == true"
+    system_types: [ml-ai]
+    scope: [approval, test, data]
+    artifacts: ["학습·검증·시험 데이터셋 명세", "성능 평가 프로토콜", "모델 변경관리 계획"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+    overlays: [X1]
+
+  - id: "생성형 AI 의료기기 허가·심사 가이드라인"
+    name_ko: "생성형 인공지능 의료기기 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-01"
+    risk_trigger:
+      condition: "generative_ai == true"
+    system_types: [ml-ai]
+    scope: [approval, test]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+    overlays: [X1]
+
+  - id: "디지털치료기기 허가·심사 가이드라인"
+    name_ko: "디지털치료기기 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    risk_trigger:
+      condition: "is_dtx == true"
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    scope: [approval, clinical]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+    note: "독립형 SW 여부, 질병 예방·관리·치료 목적, 치료 작용기전의 과학적 근거를 종합 고려해 해당 여부를 판단한다"
+
+  - id: "가상융합기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    name_ko: "가상융합기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    risk_trigger:
+      condition: "xr_applied == true"
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    scope: [approval]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "인공지능기술이 적용된 디지털의료기기 임상시험방법 설계 가이드라인"
+    name_ko: "인공지능기술이 적용된 디지털의료기기 임상시험방법 설계 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    risk_trigger:
+      condition: "ai_applied == true"
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-05-07"
+    scope: [clinical]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "독립형 디지털의료기기소프트웨어 사용적합성 가이드라인"
+    name_ko: "독립형 디지털의료기기소프트웨어 사용적합성 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-01"
+    risk_trigger:
+      condition: "form == standalone"
+    scope: [usability]
+    artifacts: ["사용적합성 공학 파일"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+
+  - id: "의료기기 사이버보안 가이드라인"
+    name_ko: "의료기기 사이버보안 허가·심사 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2025-01"
+    risk_trigger:
+      condition: "network_connected == true"
+    scope: [security]
+    artifacts: ["사이버보안 위협 모델링 문서", "보안 요구사항 명세", "SBOM"]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2025
+    status: current
+    confidence: high
+    overlays: [X2, X5]
+
+  - id: "디지털치료기기 임상시험 설계 가이드라인"
+    name_ko: "디지털치료기기 임상시험 설계 가이드라인"
+    issuer: "식품의약품안전평가원"
+    layer: guideline
+    enforcement: L2
+    risk_trigger:
+      condition: "is_dtx == true"
+    legal_basis:
+      ministry: "식품의약품안전처"
+      effective: "2024-12"
+    scope: [clinical]
+    audit_body: "식품의약품안전처"
+    lifecycle: v-model
+    edition_year: 2024
+    status: current
+    confidence: high
+
+  - id: "의료기기 제조 및 품질관리 기준"
+    name_ko: "의료기기 제조 및 품질관리 기준 (GMP)"
+    issuer: "식품의약품안전처"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "의료기기법"
+      ministry: "식품의약품안전처"
+    scope: [process, quality]
+    audit_body: "식품의약품안전처 / 지정 인증기관"
+    lifecycle: v-model
+    status: current
+    confidence: high
+
+  - id: "IEC 62304:2006+AMD1:2015"
+    name_ko: "의료기기 소프트웨어 - 소프트웨어 생명주기 프로세스"
+    name_en: "Medical device software - Software life cycle processes"
+    issuer: "IEC"
+    layer: international
+    enforcement: L2
+    risk_trigger:
+      scheme: "IEC62304_Class"
+      min: "A"
+    system_types: [embedded, web, mobile]
+    procurement: [민간B2B, B2C, 수출]
+    scope: [process, requirements, design, test, maintenance]
+    artifacts:
+      - "SW 개발계획서"
+      - "SW 요구사항 명세서"
+      - "SW 아키텍처 설계서"
+      - "SW 상세 설계서"
+      - "SOUP 목록"
+      - "SW 단위 검증 기록"
+      - "SW 통합시험 결과서"
+      - "SW 시스템시험 기록"
+      - "SW 형상관리 계획서"
+      - "문제 해결 프로세스 기록"
+      - "SW 유지보수 계획서"
+    audit_body: "인증기관 / 식약처 기술문서 심사"
+    lifecycle: v-model
+    relations:
+      related: ["ISO 14971:2019", "IEC 62366-1:2015", "IEC 81001-5-1:2021"]
+    ks_equivalent: null
+    edition_year: 2015
+    status: current
+    confidence: medium
+    note: "KS 번안 여부 확인 필요 (e나라표준인증 조회)"
+    overlays: [X5]
+
+  - id: "ISO 14971:2019"
+    name_ko: "의료기기 - 위험관리의 의료기기 적용"
+    issuer: "ISO"
+    layer: international
+    enforcement: L2
+    scope: [risk]
+    artifacts: ["위험관리 계획서", "위험관리 파일", "위험분석 보고서", "잔여위험 평가서"]
+    audit_body: "인증기관"
+    lifecycle: v-model
+    relations:
+      related: ["IEC 62304:2006+AMD1:2015"]
+    edition_year: 2019
+    status: current
+    confidence: high
+
+  - id: "ISO 13485:2016"
+    name_ko: "의료기기 - 품질경영시스템"
+    issuer: "ISO"
+    layer: international
+    enforcement: L2
+    scope: [process, quality]
+    audit_body: "인증기관"
+    lifecycle: v-model
+    edition_year: 2016
+    status: current
+    confidence: high
+
+  - id: "IEC 62366-1:2015+AMD1:2020"
+    name_ko: "의료기기 - 사용적합성 공학의 의료기기 적용"
+    issuer: "IEC"
+    layer: international
+    enforcement: L2
+    scope: [usability]
+    artifacts: ["사용적합성 공학 파일", "사용 관련 위험 분석"]
+    audit_body: "인증기관"
+    lifecycle: v-model
+    edition_year: 2020
+    status: current
+    confidence: high
+
+  - id: "IEC 81001-5-1:2021"
+    name_ko: "헬스소프트웨어 및 헬스IT 시스템 - 보안 활동 생명주기"
+    issuer: "IEC"
+    layer: international
+    enforcement: L2
+    risk_trigger:
+      condition: "network_connected == true"
+    scope: [security, process]
+    audit_body: "인증기관"
+    lifecycle: v-model
+    edition_year: 2021
+    status: current
+    confidence: medium
+    note: "국내 적용 범위 확인 필요 (식약처 의료기기 안심책방)"
+    overlays: [X2]
+
+  - id: "의료법"
+    name_ko: "의료법"
+    issuer: "보건복지부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "의료법"
+      ministry: "보건복지부"
+    scope: [data]
+    audit_body: "보건복지부"
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "개인정보 보호법 (민감정보)"
+    name_ko: "개인정보 보호법 - 민감정보 처리 제한"
+    issuer: "개인정보보호위원회"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "개인정보 보호법"
+      ministry: "개인정보보호위원회"
+    scope: [data, security]
+    audit_body: "개인정보보호위원회"
+    lifecycle: any
+    status: current
+    confidence: high
+    overlays: [X2]
+
+  - id: "21 CFR Part 11"
+    name_ko: "전자기록 및 전자서명 (미국)"
+    issuer: "US FDA"
+    layer: foreign_law
+    enforcement: L2
+    risk_trigger:
+      condition: "procurement contains 수출-미국"
+    scope: [data, security, process]
+    artifacts: ["전자기록 감사추적 명세", "전자서명 통제 절차서"]
+    audit_body: "US FDA"
+    lifecycle: v-model
+    status: current
+    confidence: high
+
+  - id: "EU MDR 2017/745"
+    name_ko: "유럽 의료기기 규정"
+    issuer: "European Commission"
+    layer: foreign_law
+    enforcement: L2
+    risk_trigger:
+      condition: "procurement contains 수출-EU"
+    scope: [approval, deliverable]
+    artifacts: ["기술문서 (Annex II)", "기술문서 (Annex III)", "적합성 선언서"]
+    audit_body: "Notified Body"
+    lifecycle: v-model
+    edition_year: 2017
+    status: current
+    confidence: high
+
+  - id: "IMDRF SaMD Framework"
+    name_ko: "IMDRF 의료기기 소프트웨어 프레임워크"
+    issuer: "IMDRF"
+    layer: de_facto
+    enforcement: L4
+    scope: [classification]
+    lifecycle: any
+    status: current
+    confidence: high
+
+# ---------------------------------------------------------------------------
+# 산출물 — IEC 62304 + 식약처 가이드라인
+# ---------------------------------------------------------------------------
+artifacts:
+  # 계획 단계
+  - id: MD-PLN-01
+    name: 소프트웨어 개발 계획서
+    phase: 계획
+    required: true
+    derivable: C
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-PLN-02
+    name: 소프트웨어 형상관리 계획서
+    phase: 계획
+    required: true
+    derivable: C
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-PLN-03
+    name: 위험관리 계획서
+    phase: 계획
+    required: true
+    derivable: C
+    standard_refs: ["ISO 14971:2019"]
+
+  # 분석 단계
+  - id: MD-REQ-01
+    name: 소프트웨어 요구사항 명세서
+    phase: 분석
+    required: true
+    derivable: B
+    prompt: prompts/extract-medical-requirements.md
+    template: templates/srs-medical.docx.j2
+    standard_refs: ["IEC 62304:2006+AMD1:2015", "ISO/IEC/IEEE 29148:2018"]
+  - id: MD-REQ-02
+    name: 안정성 등급 판정 근거서
+    phase: 분석
+    required: true
+    derivable: B
+    prompt: prompts/classify-safety-level.md
+    standard_refs: ["식약처 고시 제2025-23호", "IEC 62304:2006+AMD1:2015"]
+  - id: MD-REQ-03
+    name: 사용적합성 명세서
+    phase: 분석
+    required: false
+    derivable: B
+    conditional: true
+    standard_refs: ["IEC 62366-1:2015+AMD1:2020"]
+
+  # 설계 단계
+  - id: MD-DES-01
+    name: 소프트웨어 아키텍처 설계서
+    phase: 설계
+    required: true
+    derivable: A
+    prompt: prompts/compose-medical-architecture.md
+    standard_refs: ["IEC 62304:2006+AMD1:2015", "ISO/IEC/IEEE 42010:2022"]
+  - id: MD-DES-02
+    name: 소프트웨어 상세 설계서
+    phase: 설계
+    required: false
+    derivable: A
+    conditional: true
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-DES-03
+    name: SOUP 목록 및 평가 기록
+    phase: 설계
+    required: false
+    derivable: A
+    conditional: true
+    prompt: prompts/extract-soup.md
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+
+  # 위험관리
+  - id: MD-RSK-01
+    name: 소프트웨어 위험관리 파일
+    phase: 위험관리
+    required: true
+    derivable: B
+    prompt: prompts/derive-risk-file.md
+    standard_refs: ["ISO 14971:2019", "IEC 62304:2006+AMD1:2015"]
+  - id: MD-RSK-02
+    name: 잔여위험 평가서
+    phase: 위험관리
+    required: true
+    derivable: C
+    standard_refs: ["ISO 14971:2019"]
+
+  # 시험 단계
+  - id: MD-TST-01
+    name: 소프트웨어 단위 검증 기록
+    phase: 시험
+    required: false
+    derivable: B
+    conditional: true
+    prompt: prompts/generate-unit-verification.md
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-TST-02
+    name: 통합시험 계획·결과서
+    phase: 시험
+    required: true
+    derivable: B
+    standard_refs: ["IEC 62304:2006+AMD1:2015", "ISO/IEC/IEEE 29119-3:2021"]
+  - id: MD-TST-03
+    name: 시스템시험 기록
+    phase: 시험
+    required: true
+    derivable: B
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+
+  # 보안
+  - id: MD-SEC-01
+    name: 사이버보안 위협 모델링 문서
+    phase: 보안
+    required: false
+    derivable: B
+    conditional: true
+    prompt: prompts/threat-model.md
+    standard_refs: ["의료기기 사이버보안 가이드라인", "IEC 81001-5-1:2021"]
+
+  # AI
+  - id: MD-AI-01
+    name: 학습·검증·시험 데이터셋 명세
+    phase: AI
+    required: false
+    derivable: B
+    conditional: true
+    standard_refs: ["인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"]
+  - id: MD-AI-02
+    name: 성능 평가 프로토콜
+    phase: AI
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"]
+  - id: MD-AI-03
+    name: 모델 변경관리 계획서
+    phase: AI
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"]
+
+  # 유지보수·허가
+  - id: MD-MNT-01
+    name: 소프트웨어 유지보수 계획서
+    phase: 유지보수
+    required: true
+    derivable: C
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-MNT-02
+    name: 문제 해결 프로세스 기록
+    phase: 유지보수
+    required: true
+    derivable: C
+    standard_refs: ["IEC 62304:2006+AMD1:2015"]
+  - id: MD-APP-01
+    name: 허가신청서 및 첨부서류
+    phase: 허가
+    required: true
+    derivable: C
+    standard_refs: ["식약처 고시 제2025-25호", "디지털의료기기소프트웨어 허가·심사 가이드라인"]
+
+  # 수출 조건부
+  - id: MD-EXP-US1
+    name: 전자기록 감사추적 명세
+    phase: 수출
+    required: false
+    derivable: B
+    conditional: true
+    standard_refs: ["21 CFR Part 11"]
+  - id: MD-EXP-EU1
+    name: EU 기술문서 (Annex II/III)
+    phase: 수출
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["EU MDR 2017/745"]
+  - id: MD-EXP-MAP
+    name: 국내·해외 요건 차이 매핑표
+    phase: 수출
+    required: false
+    derivable: B
+    conditional: true
+
+# ---------------------------------------------------------------------------
+# 추적 규칙
+# ---------------------------------------------------------------------------
+traceability_rules_add:
+  - from: risk_item
+    to: software_req
+    relation: mitigates
+    required: true
+    bidirectional: true
+  - from: software_req
+    to: unit_test
+    relation: verifies
+    required: true
+  - from: soup_item
+    to: risk_item
+    relation: documents
+    required: true
+  - from: threat
+    to: security_control
+    relation: mitigates
+    required: false
+  - from: usability_spec
+    to: risk_item
+    relation: mitigates
+    required: false
+
+# ---------------------------------------------------------------------------
+# 품질 게이트
+# ---------------------------------------------------------------------------
+quality_gates_add:
+  - name: evidence_anchor_rate
+    metric: anchor_rate
+    threshold: 0.90
+    op: gte
+    blocking: true
+  - name: risk_requirement_linkage
+    metric: risk_with_req_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+  - name: safety_class_declared
+    metric: artifacts_with_safety_class
+    threshold: 1.0
+    op: gte
+    blocking: true
+
+# ---------------------------------------------------------------------------
+# 린터 규칙
+# ---------------------------------------------------------------------------
+lint_rules_add:
+  - id: MD-LINT-01
+    desc: "안전 관련 요구사항에 연결된 위험항목(RSK) ID가 없다"
+    severity: error
+    applies_to: [requirement]
+    standard_ref: "ISO 14971:2019"
+  - id: MD-LINT-02
+    desc: "SOUP 항목에 버전이 고정되어 있지 않다"
+    severity: error
+    applies_to: [soup_item]
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+  - id: MD-LINT-03
+    desc: "요구사항에 안전성 등급(Class A/B/C) 표시가 없다"
+    severity: error
+    applies_to: [requirement]
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+  - id: MD-LINT-04
+    desc: "임상적 판단·진단 결과를 서술하는 요구사항에 인간 확인 절차가 명시되지 않았다"
+    severity: error
+    applies_to: [requirement]
+
+# ---------------------------------------------------------------------------
+# 컨텍스트 변수 정의
+# ---------------------------------------------------------------------------
+context_schema:
+  safety_class:
+    type: enum
+    values: ["A", "B", "C"]
+    ordered: true
+    required: true
+    desc: IEC 62304 소프트웨어 안전성 등급
+  device_grade:
+    type: enum
+    values: ["1등급", "2등급", "3등급", "4등급"]
+    ordered: true
+    desc: 국내 의료기기 등급
+  form:
+    type: enum
+    values: [standalone, embedded]
+    required: true
+    desc: 독립형 / 내장형 디지털의료기기소프트웨어
+  ai_applied:
+    type: bool
+    default: false
+    desc: AI/ML 모델 적용 여부
+  generative_ai:
+    type: bool
+    default: false
+    desc: 생성형 AI 사용 여부
+  network_connected:
+    type: bool
+    default: false
+    desc: 네트워크 연결 또는 외부 인터페이스 존재
+  uses_soup:
+    type: bool
+    default: false
+    desc: SOUP(출처불명 소프트웨어) 사용 여부
+  is_dtx:
+    type: bool
+    default: false
+    desc: 디지털치료기기 해당 여부
+  xr_applied:
+    type: bool
+    default: false
+    desc: 가상융합기술(VR/AR/MR) 적용 여부
+  procurement:
+    type: list
+    values: [공공조달, 민간B2B, B2C, 수출-미국, 수출-EU, 내부]
+    default: [민간B2B]
+    desc: 조달·판매 경로
+
+# ---------------------------------------------------------------------------
+# 선택 규칙 — 배치 1 조사 결과의 IF-THEN 8종을 기계 실행 형태로 구현
+# ---------------------------------------------------------------------------
+selection_rules:
+  - id: SR-CLASS-C
+    desc: "Class C는 상세 설계서와 단위 검증 기록이 필수다"
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+    if:
+      safety_class: { gte_level: "C" }
+    then:
+      add_artifacts: [MD-DES-02, MD-TST-01]
+      add_gates:
+        - name: unit_verification_coverage
+          metric: unit_verified_ratio
+          threshold: 1.0
+          op: gte
+          blocking: true
+      notes:
+        - "아키텍처 분리(segregation) 근거를 아키텍처 설계서에 명시해야 한다"
+
+  - id: SR-CLASS-B
+    desc: "Class B는 상세 설계서를 요구하지 않으나 단위 검증 기록은 필요하다"
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+    if:
+      safety_class: "B"
+    then:
+      add_artifacts: [MD-TST-01]
+
+  - id: SR-CLASS-A
+    desc: "Class A는 상세 설계서·단위 검증을 면제할 수 있으나 등급 판정 근거는 필수다"
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+    if:
+      safety_class: "A"
+    then:
+      relax_artifacts: [MD-DES-02, MD-TST-01]
+      notes:
+        - "등급 판정 근거서(MD-REQ-02)는 면제 대상이 아니다"
+
+  - id: SR-FORM-STANDALONE
+    desc: "독립형 SW는 전용 허가 가이드라인과 사용적합성 가이드라인이 적용된다"
+    standard_ref: "디지털의료기기소프트웨어 허가·심사 가이드라인"
+    if:
+      form: "standalone"
+    then:
+      add_standards:
+        - "디지털의료기기소프트웨어 허가·심사 가이드라인"
+        - "독립형 디지털의료기기소프트웨어 사용적합성 가이드라인"
+      add_artifacts: [MD-REQ-03]
+    else:
+      add_standards:
+        - "의료기기 소프트웨어 허가·심사 가이드라인"
+
+  - id: SR-AI
+    desc: "AI 적용 시 AI 전용 가이드라인과 데이터셋·성능 산출물이 발동된다"
+    standard_ref: "인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    if:
+      ai_applied: true
+    then:
+      add_standards:
+        - "인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+        - "인공지능기술이 적용된 디지털의료기기 임상시험방법 설계 가이드라인"
+      add_artifacts: [MD-AI-01, MD-AI-02, MD-AI-03]
+      add_trace_rules:
+        - from: dataset
+          to: model_artifact
+          relation: trains
+          required: true
+        - from: software_req
+          to: model_artifact
+          relation: realized_by
+          required: true
+      require_overlays: [X1]
+
+  - id: SR-GENAI
+    desc: "생성형 AI는 별도 가이드라인이 추가 발동된다"
+    standard_ref: "생성형 AI 의료기기 허가·심사 가이드라인"
+    if:
+      generative_ai: true
+    then:
+      add_standards:
+        - "생성형 AI 의료기기 허가·심사 가이드라인"
+      require_overlays: [X1]
+      notes:
+        - "출력 비결정성에 대한 검증 전략을 성능 평가 프로토콜에 포함해야 한다"
+
+  - id: SR-NETWORK
+    desc: "네트워크 연결 기기는 사이버보안 요건이 발동된다"
+    standard_ref: "의료기기 사이버보안 가이드라인"
+    if:
+      network_connected: true
+    then:
+      add_standards:
+        - "의료기기 사이버보안 가이드라인"
+        - "IEC 81001-5-1:2021"
+      add_artifacts: [MD-SEC-01]
+      add_trace_rules:
+        - from: threat
+          to: security_control
+          relation: mitigates
+          required: true
+      require_overlays: [X2, X5]
+
+  - id: SR-SOUP
+    desc: "SOUP 사용 시 목록·위험평가·버전고정이 필수다"
+    standard_ref: "IEC 62304:2006+AMD1:2015"
+    if:
+      uses_soup: true
+    then:
+      add_artifacts: [MD-DES-03]
+      add_trace_rules:
+        - from: soup_item
+          to: risk_item
+          relation: documents
+          required: true
+      require_overlays: [X5]
+      notes:
+        - "각 SOUP 항목에 버전 고정 근거를 기재해야 한다"
+
+  - id: SR-DTX
+    desc: "디지털치료기기는 임상시험 설계 가이드라인이 추가된다"
+    standard_ref: "디지털치료기기 허가·심사 가이드라인"
+    if:
+      is_dtx: true
+    then:
+      add_standards:
+        - "디지털치료기기 허가·심사 가이드라인"
+        - "디지털치료기기 임상시험 설계 가이드라인"
+      notes:
+        - "치료 작용기전의 과학적 근거 자료가 허가 첨부서류에 포함되어야 한다"
+
+  - id: SR-XR
+    desc: "가상융합기술 적용 시 전용 가이드라인이 발동된다"
+    standard_ref: "가상융합기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+    if:
+      xr_applied: true
+    then:
+      add_standards:
+        - "가상융합기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+
+  - id: SR-EXPORT-US
+    desc: "미국 수출 시 21 CFR Part 11이 추가된다"
+    standard_ref: "21 CFR Part 11"
+    if:
+      procurement: { contains: "수출-미국" }
+    then:
+      add_standards: ["21 CFR Part 11"]
+      add_artifacts: [MD-EXP-US1, MD-EXP-MAP]
+
+  - id: SR-EXPORT-EU
+    desc: "EU 수출 시 MDR 기술문서가 추가된다"
+    standard_ref: "EU MDR 2017/745"
+    if:
+      procurement: { contains: "수출-EU" }
+    then:
+      add_standards: ["EU MDR 2017/745"]
+      add_artifacts: [MD-EXP-EU1, MD-EXP-MAP]
+
+minimum_set:
+  - "디지털의료제품법"
+  - "식약처 고시 제2025-23호"
+  - "식약처 고시 제2025-25호"
+  - "IEC 62304:2006+AMD1:2015"
+  - "ISO 14971:2019"
+  - "디지털의료기기소프트웨어 허가·심사 가이드라인"
+  - "의료기기 사이버보안 가이드라인"
+
+conflict_rules:
+  - "국내 허가는 디지털의료제품법 체계가 우선한다. IEC 62304는 산출물을 구성하는 방법론으로 작동한다"
+  - "국내 의료기기 등급(1~4등급)과 IEC 62304 안전성 등급(A/B/C)은 독립 판정되므로 둘 다 명시한다"
+  - "수출 병행 시 국내·해외 요건 중 더 엄격한 쪽으로 단일 산출물을 작성하고 차이는 매핑표로 소명한다"
+  - "사용적합성은 IEC 62366-1과 식약처 사용적합성 가이드라인이 병행 적용되며, 국내 심사 제출본은 식약처 양식을 따른다"

@@ -1,0 +1,425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repospec.dev/schema/profile.schema.json",
+  "title": "RepoSpec Methodology Profile",
+  "description": "레이어 하나(_base / lifecycle / industry / overlay / org / project)를 기술하는 스키마. 최종 프로파일은 리졸버가 이들을 합성해 생성한다.",
+  "type": "object",
+  "required": ["schema_version", "id", "kind", "name"],
+  "additionalProperties": false,
+
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$" },
+    "kind": {
+      "type": "string",
+      "enum": ["base", "lifecycle", "industry", "overlay", "org", "project"]
+    },
+    "extends": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+    "status": { "type": "string", "enum": ["stable", "beta", "draft"], "default": "draft" },
+
+    "ksic": { "type": "array", "items": { "type": "string" } },
+    "ncs_ref": { "type": "array", "items": { "type": "string" } },
+    "audit_bodies": { "type": "array", "items": { "type": "string" } },
+
+    "lifecycle": { "type": "string", "enum": ["v-model", "agile", "hybrid"] },
+    "lifecycle_default": { "type": "string", "enum": ["v-model", "agile", "hybrid"] },
+    "lifecycle_options": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["v-model", "agile", "hybrid"] }
+    },
+
+    "risk_scheme": { "$ref": "#/$defs/riskScheme" },
+
+    "activation": { "$ref": "#/$defs/activation" },
+
+    "id_scheme": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "array"] }
+    },
+
+    "derivable_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "A": { "$ref": "#/$defs/derivableAction" },
+        "B": { "$ref": "#/$defs/derivableAction" },
+        "C": { "$ref": "#/$defs/derivableAction" }
+      }
+    },
+
+    "evidence_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "require_anchor": { "type": "boolean" },
+        "unanchored_tag": { "type": "string" },
+        "unanchored_action": {
+          "type": "string",
+          "enum": ["force_review", "drop", "warn"]
+        }
+      }
+    },
+
+    "standards":     { "type": "array", "items": { "$ref": "#/$defs/standard" } },
+    "standards_add": { "type": "array", "items": { "$ref": "#/$defs/standard" } },
+
+    "artifacts":     { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+    "artifacts_add": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+
+    "traceability_rules":     { "type": "array", "items": { "$ref": "#/$defs/traceRule" } },
+    "traceability_rules_add": { "type": "array", "items": { "$ref": "#/$defs/traceRule" } },
+
+    "quality_gates":     { "type": "array", "items": { "$ref": "#/$defs/gate" } },
+    "quality_gates_add": { "type": "array", "items": { "$ref": "#/$defs/gate" } },
+
+    "lint_rules":     { "type": "array", "items": { "$ref": "#/$defs/lintRule" } },
+    "lint_rules_add": { "type": "array", "items": { "$ref": "#/$defs/lintRule" } },
+    "lint_includes":  { "type": "array", "items": { "type": "string" } },
+
+    "selection_rules": { "type": "array", "items": { "$ref": "#/$defs/selectionRule" } },
+    "conflict_rules":  { "type": "array", "items": { "type": "string" } },
+
+    "minimum_set":      { "type": "array", "items": { "type": "string" } },
+    "default_overlays": { "type": "array", "items": { "type": "string" } },
+
+    "output_formats": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["docx", "xlsx", "hwpx", "pdf", "md", "csv"] }
+    },
+    "output_default": {
+      "type": "string",
+      "enum": ["docx", "xlsx", "hwpx", "pdf", "md", "csv"]
+    },
+
+    "context_schema": {
+      "type": "object",
+      "description": "이 레이어가 selection_rules에서 참조하는 컨텍스트 변수의 정의. 리졸버는 여기 없는 변수를 규칙이 참조하면 거부한다.",
+      "additionalProperties": { "$ref": "#/$defs/contextVar" }
+    },
+
+    "restoration_policy": {
+      "type": "object",
+      "description": "역공학 복원 레벨별 방법과 신뢰도 하한. lifecycle 레이어에서만 의미를 가진다.",
+      "additionalProperties": false,
+      "required": ["levels"],
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["level", "target", "method"],
+            "additionalProperties": false,
+            "properties": {
+              "level": { "type": "integer", "minimum": 1 },
+              "target": { "type": "array", "items": { "$ref": "#/$defs/traceNode" } },
+              "method": {
+                "type": "string",
+                "enum": ["deterministic", "deterministic_with_inference", "inference"]
+              },
+              "confidence_floor": { "type": "number", "minimum": 0, "maximum": 1 },
+              "review": { "type": "string", "enum": ["optional", "required"] }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "derivableAction": {
+      "type": "string",
+      "enum": ["auto_generate", "auto_generate_with_review", "skeleton_only"]
+    },
+
+    "riskScheme": {
+      "type": "object",
+      "required": ["name", "levels"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "낮은 등급 → 높은 등급 오름차순. 비교 연산자는 이 순서를 쓴다."
+        },
+        "secondary": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "any_of": { "type": "array", "items": { "$ref": "#/$defs/signal" } },
+        "all_of": { "type": "array", "items": { "$ref": "#/$defs/signal" } },
+        "manual_override": { "type": "string", "enum": ["allowed", "forbidden"] }
+      }
+    },
+
+    "signal": {
+      "type": "object",
+      "required": ["signal", "match"],
+      "additionalProperties": false,
+      "properties": {
+        "signal": {
+          "type": "string",
+          "enum": ["dependency", "file_glob", "keyword", "context"]
+        },
+        "match": { "type": "string" },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+
+    "standard": {
+      "type": "object",
+      "required": ["id", "enforcement"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name_ko": { "type": "string" },
+        "name_en": { "type": "string" },
+        "issuer": { "type": "string" },
+        "layer": {
+          "type": "string",
+          "enum": ["law", "notice", "directive", "manual", "manual_annex",
+                   "guideline", "ks", "international", "industry",
+                   "procurer", "de_facto", "foreign_law"]
+        },
+        "enforcement": { "type": "string", "enum": ["L1", "L2", "L3", "L4"] },
+        "legal_basis": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "law": { "type": "string" },
+            "article": { "type": "string" },
+            "ministry": { "type": "string" },
+            "effective": { "type": "string" },
+            "source": { "type": "string" }
+          }
+        },
+        "risk_trigger": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "scheme": { "type": "string" },
+            "min": { "type": "string" },
+            "condition": { "type": "string" }
+          }
+        },
+        "system_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["embedded", "control", "enterprise", "web", "mobile",
+                     "data-analytics", "ml-ai", "infra"]
+          }
+        },
+        "procurement": { "type": "array", "items": { "type": "string" } },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["process", "deliverable", "requirements", "design",
+                     "coding", "test", "security", "data", "quality",
+                     "risk", "governance", "classification", "approval",
+                     "maintenance", "usability", "clinical", "infra"]
+          }
+        },
+        "role": {
+          "type": "string",
+          "enum": ["linter_source", "generator_source", "template_source",
+                   "taxonomy_source", "metric_source", "checklist_source"]
+        },
+        "artifacts": { "type": "array", "items": { "type": "string" } },
+        "audit_body": { "type": ["string", "null"] },
+        "lifecycle": { "type": "string", "enum": ["v-model", "agile", "hybrid", "any"] },
+        "relations": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "supersedes": { "type": "array", "items": { "type": "string" } },
+            "superseded_by": { "type": "array", "items": { "type": "string" } },
+            "related": { "type": "array", "items": { "type": "string" } },
+            "parent": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "ks_equivalent": { "type": ["string", "null"] },
+        "edition_year": { "type": ["integer", "null"] },
+        "status": { "type": "string", "enum": ["current", "superseded", "withdrawn", "draft"] },
+        "source": { "type": ["string", "null"] },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+        "note": { "type": "string" },
+        "overlays": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "artifact": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string" },
+        "name": { "type": "string" },
+        "phase": { "type": "string" },
+        "required": { "type": "boolean", "default": false },
+        "derivable": { "type": "string", "enum": ["A", "B", "C"] },
+        "template": { "type": "string" },
+        "prompt": { "type": "string" },
+        "standard_refs": { "type": "array", "items": { "type": "string" } },
+        "conditional": {
+          "type": "boolean",
+          "default": false,
+          "description": "selection_rules가 활성화해야 포함되는 산출물"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "derivable": { "const": "C" } },
+            "required": ["derivable"]
+          },
+          "then": {
+            "not": { "required": ["prompt"] },
+            "description": "PL-05: C등급 산출물에 생성 프롬프트를 연결할 수 없다"
+          }
+        }
+      ]
+    },
+
+    "traceRule": {
+      "type": "object",
+      "required": ["from", "to", "relation"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "$ref": "#/$defs/traceNode" },
+        "to": { "$ref": "#/$defs/traceNode" },
+        "relation": {
+          "type": "string",
+          "enum": ["implements", "verifies", "derives_from", "satisfies",
+                   "realized_by", "trains", "mitigates", "documents"]
+        },
+        "required": { "type": "boolean", "default": false },
+        "bidirectional": { "type": "boolean", "default": false }
+      }
+    },
+
+    "traceNode": {
+      "type": "string",
+      "enum": ["stakeholder_req", "system_req", "software_req", "requirement",
+               "story", "acceptance_criterion", "component", "architecture",
+               "detail_design", "testcase", "unit_test", "integration_test",
+               "system_test", "acceptance_test", "code_symbol", "commit",
+               "dataset", "model_artifact", "risk_item", "soup_item",
+               "threat", "security_control", "usability_spec",
+               "rfp_requirement", "deliverable", "change_request",
+               "function_point", "weakness_item"]
+    },
+
+    "gate": {
+      "type": "object",
+      "required": ["name", "metric", "threshold"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "metric": { "type": "string" },
+        "threshold": { "type": "number" },
+        "op": { "type": "string", "enum": ["gte", "lte", "eq"], "default": "gte" },
+        "condition": { "type": "string" },
+        "blocking": { "type": "boolean", "default": true }
+      }
+    },
+
+    "lintRule": {
+      "type": "object",
+      "required": ["id", "desc", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "desc": { "type": "string" },
+        "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+        "applies_to": { "type": "array", "items": { "type": "string" } },
+        "pattern": { "type": "string" },
+        "standard_ref": { "type": "string" }
+      }
+    },
+
+    "selectionRule": {
+      "type": "object",
+      "required": ["id", "if", "then"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "desc": { "type": "string" },
+        "if": {
+          "type": "object",
+          "description": "컨텍스트 변수 → 조건식. 모든 항목이 참이어야 발동(AND).",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/condition" }
+        },
+        "then": { "$ref": "#/$defs/ruleEffect" },
+        "else": { "$ref": "#/$defs/ruleEffect" },
+        "standard_ref": { "type": "string" }
+      }
+    },
+
+    "condition": {
+      "oneOf": [
+        { "type": ["string", "boolean", "number"] },
+        { "type": "array", "items": { "type": ["string", "boolean", "number"] } },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "eq":       { "type": ["string", "boolean", "number"] },
+            "ne":       { "type": ["string", "boolean", "number"] },
+            "in":       { "type": "array" },
+            "not_in":   { "type": "array" },
+            "contains": { "type": ["string", "number"] },
+            "gte_level":{ "type": "string" },
+            "lte_level":{ "type": "string" },
+            "scheme":   { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "ruleEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "add_standards":  { "type": "array", "items": { "type": "string" } },
+        "add_artifacts":  { "type": "array", "items": { "type": "string" } },
+        "drop_artifacts": { "type": "array", "items": { "type": "string" } },
+        "relax_artifacts":{ "type": "array", "items": { "type": "string" } },
+        "add_gates":      { "type": "array", "items": { "$ref": "#/$defs/gate" } },
+        "add_trace_rules":{ "type": "array", "items": { "$ref": "#/$defs/traceRule" } },
+        "add_lint_rules": { "type": "array", "items": { "type": "string" } },
+        "require_overlays": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "contextVar": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "enum": ["enum", "bool", "string", "number", "list"] },
+        "values": { "type": "array", "items": { "type": "string" } },
+        "ordered": {
+          "type": "boolean",
+          "default": false,
+          "description": "true면 values 순서로 gte_level/lte_level 비교가 가능하다"
+        },
+        "default": {},
+        "desc": { "type": "string" },
+        "required": { "type": "boolean", "default": false }
+      }
+    }
+  }
+}

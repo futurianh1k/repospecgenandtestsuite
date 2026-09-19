@@ -1,0 +1,141 @@
+schema_version: "1.0"
+id: X2-privacy-security
+kind: overlay
+name: 개인정보·보안 오버레이
+description: 개인정보 처리 또는 외부 인터페이스가 존재하는 시스템에 중첩 적용
+status: beta
+
+activation:
+  any_of:
+    - { signal: dependency, match: "cryptography|pyjwt|bcrypt|passlib|oauthlib", weight: 0.30 }
+    - { signal: keyword,    match: "개인정보|주민등록번호|personal_data|encrypt|decrypt|jwt|oauth", weight: 0.30 }
+    - { signal: file_glob,  match: "**/auth/**|**/security/**", weight: 0.25 }
+    - { signal: context,    match: "network_connected == true", weight: 0.80 }
+  manual_override: allowed
+
+standards_add:
+  - id: "개인정보 보호법"
+    name_ko: "개인정보 보호법"
+    issuer: "개인정보보호위원회"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "개인정보 보호법"
+      ministry: "개인정보보호위원회"
+    scope: [data, security]
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "정보통신망법"
+    name_ko: "정보통신망 이용촉진 및 정보보호 등에 관한 법률"
+    issuer: "과학기술정보통신부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      ministry: "과학기술정보통신부"
+    scope: [security]
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "ISO/IEC 27001:2022"
+    name_ko: "정보보안 경영시스템"
+    issuer: "ISO/IEC"
+    layer: international
+    enforcement: L4
+    scope: [security, process]
+    lifecycle: any
+    edition_year: 2022
+    status: current
+    confidence: high
+
+  - id: "ISO/IEC 27701:2019"
+    name_ko: "개인정보 보호 경영시스템"
+    issuer: "ISO/IEC"
+    layer: international
+    enforcement: L4
+    scope: [data, process]
+    lifecycle: any
+    edition_year: 2019
+    status: current
+    confidence: high
+
+  - id: "소프트웨어 개발보안 가이드 (KISA)"
+    name_ko: "소프트웨어 개발보안 가이드"
+    issuer: "한국인터넷진흥원"
+    layer: guideline
+    enforcement: L3
+    scope: [coding, security]
+    role: checklist_source
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "OWASP ASVS"
+    name_ko: "애플리케이션 보안 검증 표준"
+    issuer: "OWASP"
+    layer: de_facto
+    enforcement: L4
+    scope: [security, test]
+    role: checklist_source
+    lifecycle: any
+    status: current
+    confidence: high
+
+artifacts_add:
+  - id: SEC-01
+    name: 개인정보 처리 흐름도
+    phase: 보안
+    required: true
+    derivable: B
+    standard_refs: ["개인정보 보호법", "ISO/IEC 27701:2019"]
+  - id: SEC-02
+    name: 보안 요구사항 명세서
+    phase: 보안
+    required: true
+    derivable: B
+    standard_refs: ["OWASP ASVS"]
+  - id: SEC-03
+    name: 시큐어코딩 점검표
+    phase: 보안
+    required: true
+    derivable: A
+    standard_refs: ["소프트웨어 개발보안 가이드 (KISA)"]
+  - id: SEC-04
+    name: 접근통제 정책서
+    phase: 보안
+    required: false
+    derivable: C
+    conditional: true
+
+traceability_rules_add:
+  - from: threat
+    to: security_control
+    relation: mitigates
+    required: true
+  - from: security_control
+    to: testcase
+    relation: verifies
+    required: true
+
+quality_gates_add:
+  - name: secure_coding_critical
+    metric: critical_weakness_count
+    threshold: 0
+    op: lte
+    blocking: true
+
+lint_rules_add:
+  - id: SEC-LINT-01
+    desc: "개인정보를 처리하는 요구사항에 보관기간·파기 절차가 명시되지 않았다"
+    severity: error
+    applies_to: [requirement]
+  - id: SEC-LINT-02
+    desc: "인증·인가 요구사항에 실패 시 동작이 명시되지 않았다"
+    severity: warning
+    applies_to: [requirement]
+
+conflict_rules:
+  - "보안 요구사항은 산업 도메인 요구사항 명세서에 통합하되, 위협 모델링은 독립 문서로 유지한다"
+  - "산업 도메인이 자체 보안 가이드라인을 가진 경우(의료기기 사이버보안 등) 그쪽이 우선하고 본 오버레이는 보완 적용한다"

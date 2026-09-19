@@ -1,0 +1,128 @@
+schema_version: "1.0"
+id: v-model
+kind: lifecycle
+name: V-Cycle 생명주기
+description: >
+  좌측 가지(요구·설계)와 우측 가지(시험)가 레벨별로 대응하는 V자 모델.
+  역공학에서는 코드(V자 바닥)에서 시작해 양 날개를 동시에 위로 복원한다.
+  복원 레벨이 올라갈수록 코드 증거가 희박해지므로 신뢰도가 단조 감소한다.
+status: stable
+
+lifecycle: v-model
+
+id_scheme:
+  stakeholder_req: "STK-{n:03d}"
+  system_req: "SYS-{n:03d}"
+  software_req: "SWR-{n:03d}"
+  requirement: "SWR-{n:03d}"
+  testcase: "TC-{req_id}-{n:02d}"
+  unit_test: "UT-{req_id}-{n:02d}"
+  integration_test: "IT-{n:03d}"
+  system_test: "ST-{n:03d}"
+  acceptance_test: "AT-{n:03d}"
+  component: "CMP-{n:03d}"
+
+artifacts_add:
+  - id: VM-STK
+    name: 이해관계자 요구사항 명세서
+    phase: 분석
+    required: false
+    derivable: B
+    prompt: prompts/restore-stakeholder-req.md
+  - id: VM-SYS
+    name: 시스템 요구사항 명세서
+    phase: 분석
+    required: false
+    derivable: B
+    prompt: prompts/restore-system-req.md
+  - id: VM-IT
+    name: 통합시험 시나리오
+    phase: 설계
+    required: true
+    derivable: B
+  - id: VM-ST
+    name: 시스템시험 시나리오
+    phase: 설계
+    required: true
+    derivable: B
+
+traceability_rules_add:
+  # V자 좌우 대응 — 각 레벨의 요구는 같은 레벨의 시험으로 검증된다
+  - from: stakeholder_req
+    to: acceptance_test
+    relation: verifies
+    required: true
+  - from: system_req
+    to: system_test
+    relation: verifies
+    required: true
+  - from: architecture
+    to: integration_test
+    relation: verifies
+    required: true
+  - from: software_req
+    to: unit_test
+    relation: verifies
+    required: true
+  # 좌측 가지 수직 분해
+  - from: system_req
+    to: stakeholder_req
+    relation: derives_from
+    required: true
+  - from: software_req
+    to: system_req
+    relation: derives_from
+    required: true
+
+quality_gates_add:
+  - name: vmodel_level_pairing
+    metric: level_paired_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+  - name: restoration_confidence_declared
+    metric: artifacts_with_restoration_level
+    threshold: 1.0
+    op: gte
+    blocking: true
+
+lint_rules_add:
+  - id: VM-LINT-01
+    desc: "복원 레벨 3 이상(시스템·이해관계자 요구)은 검수 필수 표시가 있어야 한다"
+    severity: error
+    applies_to: [requirement]
+  - id: VM-LINT-02
+    desc: "요구사항 레벨이 명시되지 않았다"
+    severity: error
+    applies_to: [requirement]
+
+restoration_policy:
+  levels:
+    - level: 1
+      target: [detail_design, unit_test]
+      method: deterministic
+      confidence_floor: 0.90
+      review: optional
+    - level: 2
+      target: [architecture, integration_test]
+      method: deterministic_with_inference
+      confidence_floor: 0.75
+      review: optional
+    - level: 3
+      target: [system_req, system_test]
+      method: inference
+      confidence_floor: 0.50
+      review: required
+    - level: 4
+      target: [stakeholder_req, acceptance_test]
+      method: inference
+      confidence_floor: 0.30
+      review: required
+
+context_schema:
+  restoration_depth:
+    type: enum
+    values: ["1", "2", "3", "4"]
+    ordered: true
+    default: "2"
+    desc: 어느 레벨까지 복원할지

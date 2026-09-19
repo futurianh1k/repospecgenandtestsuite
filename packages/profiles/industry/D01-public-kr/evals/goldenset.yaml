@@ -1,0 +1,321 @@
+schema_version: "1.0"
+profile: D01-public-kr
+name: D01 공공 CBD 프로파일 골든셋
+description: >
+  사업규모·감리·보안진단·개인정보·유지관리 조합의 조건 분기 검증.
+  D04와 달리 drop을 쓰는 규칙(유지관리)이 있어 add/drop 우선순위가 실제로 작동한다.
+
+resolution_cases:
+  - id: PC-01
+    name: "소규모 구축 감리 없음 — 최소 구성"
+    context:
+      project_scale: "소규모"
+      project_type: 구축
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: true
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      fired_rules: [SR-SCALE-SMALL, SR-DB-STANDARD]
+      artifacts_include: [AN-01, AN-02, AN-03, DB-KR-01]
+      artifacts_optional: [DE-02, DE-10]
+      artifacts_exclude:
+        - AU-01
+        - AU-02
+        - SC-KR-01
+        - PI-01
+        - FW-01
+        - FP-01
+        - CL-01
+        - DE-12
+        - EA-01
+      standards_absent:
+        - "행정안전부고시 제2021-4호"
+        - "개인정보 영향평가 고시"
+        - "CSAP"
+      # KISA 개발보안 가이드는 X2가 무조건 L3(권고)로 선언하고
+      # D01의 SR-SECURITY-DIAG가 L2(계약 필수)로 올린다.
+      # 진단 대상이 아니면 L3로 남아야지 사라지면 안 된다.
+      standards_enforcement:
+        "소프트웨어 개발보안 가이드 (KISA)": "L3"
+
+  - id: PC-02
+    name: "대규모 구축 감리 대상 — 과업대비표와 EA 발동"
+    context:
+      project_scale: "대규모"
+      project_type: 구축
+      audit_required: true
+      pmo_delegated: false
+      security_diagnosis: true
+      personal_data: true
+      pia_required: true
+      db_included: true
+      public_data: true
+      egov_framework: true
+      fp_estimation: true
+      cloud_deployment: false
+      data_migration: true
+    expect:
+      fired_rules:
+        - SR-AUDIT
+        - SR-SCALE-LARGE
+        - SR-SECURITY-DIAG
+        - SR-PERSONAL-DATA
+        - SR-PIA
+        - SR-DB-STANDARD
+        - SR-PUBLIC-DATA
+        - SR-EGOV-FW
+        - SR-FP
+        - SR-MIGRATION
+      artifacts_include:
+        - AU-01
+        - AU-02
+        - AU-03
+        - AU-04
+        - EA-01
+        - SC-KR-01
+        - SC-KR-02
+        - SC-KR-03
+        - PI-01
+        - DB-KR-01
+        - DB-KR-02
+        - FW-01
+        - FP-01
+        - DE-12
+      artifacts_exclude: [CL-01]
+      standards_include:
+        - "행정안전부고시 제2021-4호"
+        - "소프트웨어 개발보안 가이드 (KISA)"
+        - "개인정보 영향평가 고시"
+        - "SW사업 대가산정 가이드"
+        - "ISO/IEC 20926"
+      overlays_required: [X2]
+      gates_include: [scope_matrix_coverage, weakness_critical]
+      gate_thresholds:
+        evidence_anchor_rate: 0.90
+      # 진단 대상이면 같은 표준이 L2로 올라간다 (PC-01과 대조)
+      standards_enforcement:
+        "소프트웨어 개발보안 가이드 (KISA)": "L2"
+      trace_relations_include:
+        - "rfp_requirement->deliverable:documents"
+        - "function_point->requirement:derives_from"
+        - "weakness_item->code_symbol:documents"
+
+  - id: PC-03
+    name: "소규모인데 감리 대상 — 간소화가 차단되는지 확인"
+    # SR-SCALE-SMALL은 audit_required가 false일 때만 발동한다.
+    # 감리를 받는 사업에서 산출물을 줄이면 지적 대상이 된다.
+    context:
+      project_scale: "소규모"
+      project_type: 구축
+      audit_required: true
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: true
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      fired_rules: [SR-AUDIT, SR-DB-STANDARD]
+      artifacts_include: [AU-01, DE-02, DE-10]
+      rule_trace_absent:
+        - { rule: SR-SCALE-SMALL, action: relax_artifact, target: DE-02 }
+
+  - id: PC-04
+    name: "유지관리 사업 — drop이 실제로 작동하는지 확인"
+    context:
+      project_scale: "중규모"
+      project_type: 유지관리
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: false
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      fired_rules: [SR-MAINTENANCE]
+      artifacts_exclude: [DE-08, DE-09, DE-12, IM-03, TE-05, DB-KR-01]
+      artifacts_include: [AN-01, AN-03, DE-01, DE-03]
+      rule_trace_include:
+        - { rule: SR-MAINTENANCE, action: drop_artifact, target: DE-08 }
+
+  - id: PC-05
+    name: "유지관리 + 데이터전환 — drop과 add가 DE-12에서 충돌"
+    # SR-MAINTENANCE는 DE-12를 제거하고 SR-MIGRATION은 필수화한다.
+    # add가 이겨야 한다. 데이터 전환을 실제로 하는데 설계서가 없으면 안 된다.
+    context:
+      project_scale: "중규모"
+      project_type: 유지관리
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: false
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: true
+    expect:
+      fired_rules: [SR-MAINTENANCE, SR-MIGRATION]
+      artifacts_include: [DE-12]
+      artifacts_exclude: [DE-08, DE-09, IM-03, TE-05]
+      rule_trace_include:
+        - { rule: SR-MAINTENANCE, action: drop_skipped, target: DE-12 }
+        - { rule: SR-MAINTENANCE, action: drop_artifact, target: DE-08 }
+
+  - id: PC-06
+    name: "클라우드 배포 — X4 오버레이 자동 발동"
+    context:
+      project_scale: "중규모"
+      project_type: 구축
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: true
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: true
+      data_migration: false
+    expect:
+      fired_rules: [SR-CLOUD, SR-DB-STANDARD]
+      artifacts_include: [CL-01, CS-01, CS-02]
+      standards_include: ["CSAP", "ISO/IEC 27017:2015"]
+      overlays_required: [X4]
+
+  - id: PC-07
+    name: "PMO 위탁 소규모 — 감리 생략 안내가 나오는지 확인"
+    context:
+      project_scale: "소규모"
+      project_type: 구축
+      audit_required: false
+      pmo_delegated: true
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: true
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      fired_rules: [SR-AUDIT-WAIVER, SR-SCALE-SMALL, SR-DB-STANDARD]
+      notes_contain: ["감리 생략 가능 조건"]
+
+  - id: PC-08
+    name: "기본 오버레이 X2·X3이 항상 적용되는지 확인"
+    # 공공 시스템은 개인정보 처리 여부와 무관하게 접근성이 법적 의무다.
+    context:
+      project_scale: "소규모"
+      project_type: 구축
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: false
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      artifacts_include: [AX-01, AX-02, SEC-01, SEC-02, SEC-03]
+      standards_include: ["KWCAG 2.2", "개인정보 보호법"]
+      gates_include: [accessibility_violations]
+
+  - id: PC-09
+    name: "사업규모 누락 — 필수 컨텍스트 거부"
+    context:
+      project_type: 구축
+    expect:
+      error: "missing_required_context"
+      error_detail_contains: ["project_scale"]
+
+  - id: PC-10
+    name: "Agile 생명주기 — 공공 CBD에서 거부"
+    lifecycle: agile
+    context:
+      project_scale: "중규모"
+      project_type: 구축
+    expect:
+      error: "lifecycle_not_allowed"
+      error_detail_contains: ["agile", "D01-public-kr"]
+
+  - id: PC-11
+    name: "요구사항 코드 체계 enum 위반"
+    context:
+      project_scale: "중규모"
+      project_type: 구축
+      req_code_scheme: "SFR_INR"
+    expect:
+      error: "invalid_context_value"
+      error_detail_contains: ["req_code_scheme"]
+
+  - id: PC-12
+    name: "감리 대상 + 소규모 간소화 규칙 동시 시도 — else 없음 확인"
+    # SR-SCALE-SMALL에 else 분기가 없으므로 조건 미충족 시 아무 효과가 없어야 한다.
+    # 잘못 구현하면 감리 사업에서 산출물이 줄어든다.
+    context:
+      project_scale: "중규모"
+      project_type: 구축
+      audit_required: false
+      pmo_delegated: false
+      security_diagnosis: false
+      personal_data: false
+      pia_required: false
+      db_included: true
+      public_data: false
+      egov_framework: false
+      fp_estimation: false
+      cloud_deployment: false
+      data_migration: false
+    expect:
+      fired_rules: [SR-DB-STANDARD]
+      artifacts_include: [DE-02, DE-10]
+
+extraction_cases:
+  - id: PE-01
+    name: "PMR·PSR을 생성하지 않는지 확인"
+    status: pending_fixture
+    fixture: fixtures/egov-civil/
+    context:
+      project_scale: "중규모"
+      project_type: 구축
+    expect:
+      forbidden_id_prefixes: ["PMR-", "PSR-"]
+      must_report_not_derivable: ["PMR", "PSR"]
+
+  - id: PE-02
+    name: "과업대비표가 RFP 없이 생성되지 않는지 확인"
+    status: pending_fixture
+    fixture: fixtures/egov-civil/
+    context:
+      project_scale: "대규모"
+      project_type: 구축
+      audit_required: true
+    rfp_requirements: []
+    expect:
+      error_or_empty: true
+      note: "RFP 요구사항이 없으면 과업대비표를 만들 수 없다"

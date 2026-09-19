@@ -1,0 +1,955 @@
+schema_version: "1.0"
+id: D01-public-kr
+kind: industry
+extends: _base
+name: 공공행정·전자정부 (CBD 표준산출물)
+description: >
+  NIA CBD SW개발 표준 산출물 25종 기반 공공 정보화사업 프로파일.
+  감리 대응과 과업대비표가 핵심이며, 요구사항 추적표는 RTM과 과업대비표의
+  두 축으로 나뉜다. RTM은 요구사항→설계→시험의 내부 추적이고,
+  과업대비표는 RFP 요구사항→산출물의 계약 이행 증명이다. 둘을 섞으면
+  감리에서 과업 누락 소명이 불가능해진다.
+tier: T2
+status: beta
+
+ksic: ["O84", "J62"]
+ncs_ref: ["응용SW엔지니어링", "시스템SW엔지니어링", "DB엔지니어링"]
+audit_bodies:
+  - 정보시스템 감리법인
+  - 발주기관 검수
+  - 과업심의위원회
+
+lifecycle_default: v-model
+lifecycle_options: [v-model, hybrid]
+
+risk_scheme:
+  name: "사업규모"
+  levels: ["소규모", "중규모", "대규모"]
+
+id_scheme:
+  requirement: "{req_type}-{n:03d}"
+  rfp_requirement: "{req_type}-{n:03d}"
+  unit_test: "UT-{req_id}-{n:02d}"
+  component: "CMP-{n:03d}"
+  deliverable: "{phase_code}-{n:02d}"
+
+output_formats: [hwpx, docx, xlsx, pdf]
+output_default: hwpx
+
+default_overlays: [X2, X3]
+
+# ---------------------------------------------------------------------------
+# 표준
+# ---------------------------------------------------------------------------
+standards:
+  - id: "전자정부법"
+    name_ko: "전자정부법"
+    issuer: "행정안전부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "전자정부법"
+      article: "제57조~제63조 (감리)"
+      ministry: "행정안전부"
+      source: "https://www.law.go.kr"
+    system_types: [enterprise, web, infra]
+    procurement: [공공조달]
+    scope: [process, deliverable]
+    audit_body: "정보시스템 감리법인"
+    lifecycle: v-model
+    status: current
+    confidence: high
+    note: "조항 번호는 국가법령정보센터 교차 확인 필요"
+
+  - id: "행정안전부고시 제2023-27호"
+    name_ko: "행정기관 및 공공기관 정보시스템 구축·운영 지침"
+    issuer: "행정안전부"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "전자정부법"
+      ministry: "행정안전부"
+      effective: "2023-04-18"
+      source: "https://www.law.go.kr/LSW//admRulInfoP.do?admRulSeq=2100000222150"
+    scope: [process, deliverable, requirements]
+    artifacts: ["요구사항정의서", "요구사항추적표", "표준산출물"]
+    audit_body: "발주기관 / 감리법인"
+    lifecycle: v-model
+    edition_year: 2023
+    status: current
+    confidence: medium
+    note: "이후 개정본(제2025-01호 등) 존재 여부 확인 필요"
+
+  - id: "소프트웨어 진흥법"
+    name_ko: "소프트웨어 진흥법"
+    issuer: "과학기술정보통신부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "소프트웨어 진흥법"
+      article: "제50조 (과업심의위원회)"
+      ministry: "과학기술정보통신부"
+    scope: [process]
+    artifacts: ["과업대비표", "과업변경요청서"]
+    audit_body: "과업심의위원회"
+    lifecycle: v-model
+    status: current
+    confidence: medium
+    note: "조항 번호 교차 확인 필요"
+
+  - id: "전자정부법 시행령"
+    name_ko: "전자정부법 시행령"
+    issuer: "행정안전부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "전자정부법 시행령"
+      article: "제71조 (감리 대상·생략), 제82조"
+      ministry: "행정안전부"
+    scope: [process]
+    audit_body: "발주기관"
+    lifecycle: v-model
+    status: current
+    confidence: medium
+    note: >
+      감리 의무는 총사업비에서 HW·SW 단순 구입비를 제외한 금액이 1억원 이상인
+      경우이며, 전자정부사업관리 위탁 수행 시 일정 규모 미만은 생략 가능하다.
+      생략 기준 금액과 현행 조항 번호는 확인 필요.
+
+  - id: "행정안전부고시 제2021-4호"
+    name_ko: "정보시스템 감리기준"
+    issuer: "행정안전부"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "전자정부법"
+      ministry: "행정안전부"
+      effective: "2021-01-19"
+    risk_trigger:
+      condition: "audit_required == true"
+    scope: [process, deliverable]
+    artifacts: ["감리 수감 자료", "감리 지적사항 조치 내역서"]
+    audit_body: "정보시스템 감리법인"
+    lifecycle: v-model
+    edition_year: 2021
+    status: current
+    confidence: high
+    note: "이후 개정 여부 확인 필요"
+
+  - id: "CBD SW개발 표준 산출물 관리 가이드"
+    name_ko: "CBD SW개발 표준 산출물 관리 가이드"
+    issuer: "한국지능정보사회진흥원"
+    layer: guideline
+    enforcement: L3
+    legal_basis:
+      ministry: "행정안전부"
+      source: "https://www.cisp.or.kr/archives/11195"
+    scope: [deliverable]
+    role: template_source
+    artifacts: ["분석·설계·구현·시험 단계 산출물 25종"]
+    audit_body: "감리법인 / 발주기관"
+    lifecycle: v-model
+    edition_year: 2011
+    status: current
+    confidence: high
+    note: >
+      산출물 양식과 항목은 프로젝트 특성에 맞게 수정·추가하여 사용할 수 있다.
+      본 프로파일은 25종 전체를 기본 세트로 두고 규칙으로 가감한다.
+
+  - id: "소프트웨어 개발보안 가이드 (KISA)"
+    name_ko: "소프트웨어 개발보안 가이드"
+    issuer: "한국인터넷진흥원"
+    layer: guideline
+    enforcement: L2
+    legal_basis:
+      law: "전자정부법"
+      ministry: "행정안전부"
+    risk_trigger:
+      condition: "security_diagnosis == true"
+    scope: [coding, security]
+    role: checklist_source
+    artifacts: ["시큐어코딩 점검표", "보안약점 진단 결과서", "보안약점 조치 내역서"]
+    audit_body: "행정안전부 지정 진단기관"
+    lifecycle: v-model
+    status: current
+    confidence: high
+    note: "보안약점 진단 대상 사업에 적용된다. 진단 항목 수 확인 필요"
+
+  - id: "개인정보 보호법"
+    name_ko: "개인정보 보호법"
+    issuer: "개인정보보호위원회"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "개인정보 보호법"
+      ministry: "개인정보보호위원회"
+    risk_trigger:
+      condition: "personal_data == true"
+    scope: [data, security]
+    audit_body: "개인정보보호위원회"
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "개인정보 영향평가 고시"
+    name_ko: "개인정보 영향평가에 관한 고시"
+    issuer: "개인정보보호위원회"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "개인정보 보호법"
+      article: "제33조 (개인정보 영향평가)"
+      ministry: "개인정보보호위원회"
+    risk_trigger:
+      condition: "pia_required == true"
+    scope: [data]
+    artifacts: ["개인정보 영향평가서"]
+    audit_body: "개인정보보호위원회 지정 평가기관"
+    lifecycle: v-model
+    status: current
+    confidence: medium
+    note: "영향평가 의무 대상 기준(정보주체 수 등) 확인 필요"
+
+  - id: "지능정보화 기본법"
+    name_ko: "지능정보화 기본법"
+    issuer: "과학기술정보통신부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "지능정보화 기본법"
+      article: "정보접근성 관련 조항"
+      ministry: "과학기술정보통신부"
+    scope: [requirements, test]
+    audit_body: "한국지능정보사회진흥원"
+    lifecycle: any
+    status: current
+    confidence: medium
+    note: "웹 접근성 의무 조항 번호 확인 필요"
+
+  - id: "공공데이터법"
+    name_ko: "공공데이터의 제공 및 이용 활성화에 관한 법률"
+    issuer: "행정안전부"
+    layer: law
+    enforcement: L1
+    legal_basis:
+      law: "공공데이터의 제공 및 이용 활성화에 관한 법률"
+      ministry: "행정안전부"
+    risk_trigger:
+      condition: "public_data == true"
+    scope: [data]
+    artifacts: ["공공데이터 개방 목록", "메타데이터 등록 결과서"]
+    audit_body: "행정안전부"
+    lifecycle: any
+    status: current
+    confidence: medium
+
+  - id: "공공기관의 데이터베이스 표준화 지침"
+    name_ko: "공공기관의 데이터베이스 표준화 지침"
+    issuer: "행정안전부"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      article: "제10조 (정보화사업 수행 시 공공데이터베이스 표준 적용)"
+      ministry: "행정안전부"
+    risk_trigger:
+      condition: "db_included == true"
+    scope: [data]
+    artifacts: ["데이터베이스 표준 준수 점검표", "표준용어·도메인 사전"]
+    audit_body: "발주기관"
+    lifecycle: v-model
+    status: current
+    confidence: medium
+
+  - id: "전자정부 표준프레임워크"
+    name_ko: "전자정부 표준프레임워크"
+    issuer: "한국지능정보사회진흥원"
+    layer: de_facto
+    enforcement: L3
+    risk_trigger:
+      condition: "egov_framework == true"
+    scope: [design, coding]
+    artifacts: ["표준프레임워크 준수 확인서", "공통컴포넌트 적용 내역"]
+    audit_body: "발주기관 / 감리법인"
+    lifecycle: v-model
+    status: current
+    confidence: high
+
+  - id: "SW사업 대가산정 가이드"
+    name_ko: "소프트웨어사업 대가산정 가이드"
+    issuer: "한국소프트웨어산업협회"
+    layer: guideline
+    enforcement: L3
+    risk_trigger:
+      condition: "fp_estimation == true"
+    scope: [process]
+    artifacts: ["기능점수 산정서", "기능점수 산정 내역"]
+    audit_body: "발주기관"
+    lifecycle: any
+    status: current
+    confidence: high
+    note: "최신 개정판 확인 필요"
+
+  - id: "ISO/IEC 20926"
+    name_ko: "소프트웨어 및 시스템 공학 - IFPUG 기능규모 측정방법"
+    issuer: "ISO/IEC"
+    layer: international
+    enforcement: L4
+    risk_trigger:
+      condition: "fp_estimation == true"
+    scope: [process]
+    role: metric_source
+    audit_body: null
+    lifecycle: any
+    edition_year: 2009
+    status: current
+    confidence: medium
+    note: "국내 대가산정 가이드가 참조하는 기능점수 측정 표준"
+
+  - id: "CSAP"
+    name_ko: "클라우드 보안인증"
+    issuer: "한국인터넷진흥원"
+    layer: notice
+    enforcement: L1
+    legal_basis:
+      law: "클라우드컴퓨팅 발전 및 이용자 보호에 관한 법률"
+      ministry: "과학기술정보통신부"
+    risk_trigger:
+      condition: "cloud_deployment == true"
+    scope: [infra, security]
+    artifacts: ["클라우드 보안인증 확인 내역"]
+    audit_body: "한국인터넷진흥원"
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "범정부 EA 메타모델"
+    name_ko: "범정부 정보기술아키텍처 메타모델"
+    issuer: "행정안전부"
+    layer: notice
+    enforcement: L2
+    legal_basis:
+      law: "전자정부법"
+      ministry: "행정안전부"
+    scope: [design, deliverable]
+    artifacts: ["EA 산출물 등록 내역"]
+    audit_body: "행정안전부"
+    lifecycle: v-model
+    status: current
+    confidence: medium
+
+  - id: "ISO/IEC/IEEE 12207:2017"
+    name_ko: "시스템 및 소프트웨어 공학 - 소프트웨어 생명주기 프로세스"
+    issuer: "ISO/IEC/IEEE"
+    layer: international
+    enforcement: L4
+    scope: [process]
+    lifecycle: v-model
+    edition_year: 2017
+    status: current
+    confidence: high
+
+# ---------------------------------------------------------------------------
+# 산출물 — CBD 표준 25종 + 공공 사업 부속 산출물
+# ---------------------------------------------------------------------------
+artifacts:
+  # ── 분석 단계 (AN) ──
+  - id: AN-01
+    name: 사용자 요구사항 정의서
+    phase: 분석
+    required: true
+    derivable: B
+    prompt: prompts/extract-public-requirements.md
+    template: templates/an-01-requirements.hwpx.j2
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드", "행정안전부고시 제2023-27호"]
+  - id: AN-02
+    name: 유스케이스 명세서
+    phase: 분석
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: AN-03
+    name: 요구사항 추적표
+    phase: 분석
+    required: true
+    derivable: A
+    template: templates/an-03-rtm.xlsx.j2
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드", "행정안전부고시 제2023-27호"]
+
+  # ── 설계 단계 (DE) ──
+  - id: DE-01
+    name: 클래스 설계서
+    phase: 설계
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-02
+    name: 사용자 인터페이스 설계서
+    phase: 설계
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-03
+    name: 컴포넌트 설계서
+    phase: 설계
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-04
+    name: 인터페이스 설계서
+    phase: 설계
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-05
+    name: 아키텍처 설계서
+    phase: 설계
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드", "ISO/IEC/IEEE 42010:2022"]
+  - id: DE-06
+    name: 총괄시험 계획서
+    phase: 설계
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-07
+    name: 시스템시험 시나리오
+    phase: 설계
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-08
+    name: 엔티티 관계 모형 기술서
+    phase: 설계
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-09
+    name: 데이터베이스 설계서
+    phase: 설계
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-10
+    name: 통합시험 시나리오
+    phase: 설계
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: DE-11
+    name: 단위시험 케이스
+    phase: 설계
+    required: true
+    derivable: B
+    prompt: prompts/generate-unit-testcase.md
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드", "ISO/IEC/IEEE 29119-4:2021"]
+  - id: DE-12
+    name: 데이터 전환 및 초기데이터 설계서
+    phase: 설계
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+
+  # ── 구현 단계 (IM) ──
+  - id: IM-01
+    name: 프로그램 코드
+    phase: 구현
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: IM-02
+    name: 단위시험 결과서
+    phase: 구현
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: IM-03
+    name: 데이터베이스 테이블
+    phase: 구현
+    required: true
+    derivable: A
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+
+  # ── 시험 단계 (TE) ──
+  - id: TE-01
+    name: 통합시험 결과서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-02
+    name: 시스템시험 결과서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-03
+    name: 사용자 지침서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-04
+    name: 운영자 지침서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-05
+    name: 시스템 설치 결과서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-06
+    name: 인수시험 시나리오
+    phase: 시험
+    required: true
+    derivable: B
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+  - id: TE-07
+    name: 인수시험 결과서
+    phase: 시험
+    required: true
+    derivable: C
+    standard_refs: ["CBD SW개발 표준 산출물 관리 가이드"]
+
+  # ── 감리·계약 대응 (AU) — 조건부 ──
+  - id: AU-01
+    name: 과업대비표
+    phase: 감리
+    required: false
+    derivable: B
+    conditional: true
+    prompt: prompts/build-scope-matrix.md
+    template: templates/au-01-scope-matrix.xlsx.j2
+    standard_refs: ["소프트웨어 진흥법", "행정안전부고시 제2021-4호"]
+  - id: AU-02
+    name: 감리 수감 자료 목록
+    phase: 감리
+    required: false
+    derivable: A
+    conditional: true
+    standard_refs: ["행정안전부고시 제2021-4호"]
+  - id: AU-03
+    name: 감리 지적사항 조치 내역서
+    phase: 감리
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["행정안전부고시 제2021-4호"]
+  - id: AU-04
+    name: 과업변경 요청·승인 내역서
+    phase: 감리
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["소프트웨어 진흥법"]
+
+  # ── 보안 (SC) — 조건부 ──
+  - id: SC-KR-01
+    name: 시큐어코딩 점검표
+    phase: 보안
+    required: false
+    derivable: A
+    conditional: true
+    standard_refs: ["소프트웨어 개발보안 가이드 (KISA)"]
+  - id: SC-KR-02
+    name: 보안약점 진단 결과서
+    phase: 보안
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["소프트웨어 개발보안 가이드 (KISA)"]
+  - id: SC-KR-03
+    name: 보안약점 조치 내역서
+    phase: 보안
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["소프트웨어 개발보안 가이드 (KISA)"]
+
+  # ── 개인정보 (PI) — 조건부 ──
+  - id: PI-01
+    name: 개인정보 영향평가서
+    phase: 개인정보
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["개인정보 영향평가 고시"]
+
+  # ── 데이터 (DB) — 조건부 ──
+  - id: DB-KR-01
+    name: 데이터베이스 표준 준수 점검표
+    phase: 데이터
+    required: false
+    derivable: A
+    conditional: true
+    standard_refs: ["공공기관의 데이터베이스 표준화 지침"]
+  - id: DB-KR-02
+    name: 공공데이터 개방 목록 및 메타데이터 등록 결과서
+    phase: 데이터
+    required: false
+    derivable: B
+    conditional: true
+    standard_refs: ["공공데이터법"]
+
+  # ── 프레임워크·대가 (FW/FP) — 조건부 ──
+  - id: FW-01
+    name: 전자정부 표준프레임워크 준수 확인서
+    phase: 설계
+    required: false
+    derivable: A
+    conditional: true
+    standard_refs: ["전자정부 표준프레임워크"]
+  - id: FP-01
+    name: 기능점수 산정서
+    phase: 대가산정
+    required: false
+    derivable: A
+    conditional: true
+    prompt: prompts/estimate-function-points.md
+    standard_refs: ["SW사업 대가산정 가이드", "ISO/IEC 20926"]
+
+  # ── 클라우드 (CL) — 조건부 ──
+  - id: CL-01
+    name: 클라우드 보안인증 확인 내역
+    phase: 인프라
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["CSAP"]
+
+  # ── EA ──
+  - id: EA-01
+    name: EA 산출물 등록 내역
+    phase: 시험
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["범정부 EA 메타모델"]
+
+# ---------------------------------------------------------------------------
+# 추적 규칙 — 두 축
+# ---------------------------------------------------------------------------
+traceability_rules_add:
+  # 축 1: 내부 추적 (요구사항추적표, AN-03)
+  - from: requirement
+    to: component
+    relation: implements
+    required: true
+    bidirectional: true
+  - from: requirement
+    to: unit_test
+    relation: verifies
+    required: true
+  - from: requirement
+    to: acceptance_test
+    relation: verifies
+    required: true
+
+  # 축 2: 계약 이행 추적 (과업대비표, AU-01)
+  # RFP 요구사항이 어느 산출물로 이행됐는지 증명한다.
+  # 내부 추적과 섞으면 감리에서 과업 누락 소명이 불가능해진다.
+  - from: rfp_requirement
+    to: requirement
+    relation: derives_from
+    required: true
+    bidirectional: true
+  - from: rfp_requirement
+    to: deliverable
+    relation: documents
+    required: true
+  - from: change_request
+    to: rfp_requirement
+    relation: documents
+    required: false
+
+# ---------------------------------------------------------------------------
+# 품질 게이트
+# ---------------------------------------------------------------------------
+quality_gates_add:
+  - name: rtm_coverage
+    metric: req_with_tc_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+  - name: phase_deliverable_completeness
+    metric: required_artifacts_present_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+
+# ---------------------------------------------------------------------------
+# 린터 규칙
+# ---------------------------------------------------------------------------
+lint_rules_add:
+  - id: PB-LINT-01
+    desc: "요구사항 ID의 분류 접두어가 선언된 분류 체계에 없다"
+    severity: error
+    applies_to: [requirement]
+    standard_ref: "행정안전부고시 제2023-27호"
+  - id: PB-LINT-02
+    desc: "요구사항에 산출물 연결이 없어 과업대비표를 채울 수 없다"
+    severity: error
+    applies_to: [requirement]
+  - id: PB-LINT-03
+    desc: "요구사항 정의서 항목이 RFP 요구사항과 대응되지 않는다"
+    severity: warning
+    applies_to: [requirement]
+
+# ---------------------------------------------------------------------------
+# 컨텍스트 변수
+# ---------------------------------------------------------------------------
+context_schema:
+  project_scale:
+    type: enum
+    values: ["소규모", "중규모", "대규모"]
+    ordered: true
+    required: true
+    desc: 사업 규모. 산출물 필수 범위를 좌우한다
+  project_type:
+    type: enum
+    values: [구축, 고도화, 유지관리, 운영]
+    default: 구축
+    desc: 사업 유형. 유지관리는 요구사항 분류 체계가 다르다
+  req_code_scheme:
+    type: enum
+    values: [SFR_SIR, FUN_INR]
+    default: SFR_SIR
+    desc: >
+      요구사항 분류 접두어 체계. 발주기관마다 다르다.
+      SFR_SIR은 SFR/PER/DAR/SIR/TER/SER/QUR/COR/PMR/PSR,
+      FUN_INR은 FUN/PER/DAR/INR/TER/SER/QUR/ECR/PMR/PSR를 쓴다.
+  audit_required:
+    type: bool
+    default: false
+    desc: 감리 의무 대상 여부
+  pmo_delegated:
+    type: bool
+    default: false
+    desc: 전자정부사업관리(PMO) 위탁 여부
+  security_diagnosis:
+    type: bool
+    default: false
+    desc: 보안약점 진단 대상 여부
+  personal_data:
+    type: bool
+    default: false
+    desc: 개인정보 처리 여부
+  pia_required:
+    type: bool
+    default: false
+    desc: 개인정보 영향평가 의무 대상 여부
+  db_included:
+    type: bool
+    default: true
+    desc: 데이터베이스 구축·변경 포함 여부
+  public_data:
+    type: bool
+    default: false
+    desc: 공공데이터 개방 대상 여부
+  egov_framework:
+    type: bool
+    default: false
+    desc: 전자정부 표준프레임워크 적용 여부
+  fp_estimation:
+    type: bool
+    default: false
+    desc: 기능점수 대가산정 필요 여부
+  cloud_deployment:
+    type: bool
+    default: false
+    desc: 클라우드 배포 여부
+  data_migration:
+    type: bool
+    default: false
+    desc: 데이터 전환 포함 여부
+
+# ---------------------------------------------------------------------------
+# 선택 규칙
+# ---------------------------------------------------------------------------
+selection_rules:
+  - id: SR-AUDIT
+    desc: "감리 대상 사업은 감리 대응 산출물이 필요하다"
+    standard_ref: "행정안전부고시 제2021-4호"
+    if:
+      audit_required: true
+    then:
+      add_standards: ["행정안전부고시 제2021-4호"]
+      add_artifacts: [AU-01, AU-02, AU-03, AU-04]
+      add_trace_rules:
+        - from: rfp_requirement
+          to: deliverable
+          relation: documents
+          required: true
+      add_gates:
+        - name: scope_matrix_coverage
+          metric: rfp_req_with_deliverable_ratio
+          threshold: 1.0
+          op: gte
+          blocking: true
+      notes:
+        - "요구사항 변경이 있으면 발주자 확인 근거(회의록, 과업변경요청서 승인결과)를 함께 준비해야 한다"
+
+  - id: SR-AUDIT-WAIVER
+    desc: "PMO 위탁 소규모 사업은 감리 생략 가능성이 있다"
+    standard_ref: "전자정부법 시행령"
+    if:
+      audit_required: false
+      pmo_delegated: true
+      project_scale: { lte_level: "소규모" }
+    then:
+      notes:
+        - "감리 생략 가능 조건에 해당할 수 있으나, 생략 여부는 발주기관이 판단한다. 시행령 현행 기준 확인 필요"
+
+  - id: SR-SCALE-LARGE
+    desc: "대규모 사업은 데이터 전환 설계와 EA 등록이 필수다"
+    standard_ref: "범정부 EA 메타모델"
+    if:
+      project_scale: { gte_level: "대규모" }
+    then:
+      add_artifacts: [EA-01]
+      add_gates:
+        - name: evidence_anchor_rate
+          metric: anchor_rate
+          threshold: 0.90
+          op: gte
+          blocking: true
+
+  - id: SR-SCALE-SMALL
+    desc: "소규모 사업은 일부 설계 산출물을 간소화할 수 있다"
+    standard_ref: "CBD SW개발 표준 산출물 관리 가이드"
+    if:
+      project_scale: "소규모"
+      audit_required: false
+    then:
+      relax_artifacts: [DE-02, DE-10]
+      notes:
+        - "간소화는 발주기관과 협의해 확정해야 하며, 요구사항추적표(AN-03)는 간소화 대상이 아니다"
+
+  - id: SR-SECURITY-DIAG
+    desc: "보안약점 진단 대상은 시큐어코딩 점검 체계가 필요하다"
+    standard_ref: "소프트웨어 개발보안 가이드 (KISA)"
+    if:
+      security_diagnosis: true
+    then:
+      add_standards: ["소프트웨어 개발보안 가이드 (KISA)"]
+      add_artifacts: [SC-KR-01, SC-KR-02, SC-KR-03]
+      add_trace_rules:
+        - from: weakness_item
+          to: code_symbol
+          relation: documents
+          required: true
+      add_gates:
+        - name: weakness_critical
+          metric: critical_weakness_count
+          threshold: 0
+          op: lte
+          blocking: true
+      require_overlays: [X2]
+
+  - id: SR-PERSONAL-DATA
+    desc: "개인정보 처리 시 보호 체계가 발동된다"
+    standard_ref: "개인정보 보호법"
+    if:
+      personal_data: true
+    then:
+      add_standards: ["개인정보 보호법"]
+      require_overlays: [X2]
+
+  - id: SR-PIA
+    desc: "개인정보 영향평가 의무 대상은 평가서가 필요하다"
+    standard_ref: "개인정보 영향평가 고시"
+    if:
+      pia_required: true
+    then:
+      add_standards: ["개인정보 영향평가 고시"]
+      add_artifacts: [PI-01]
+      require_overlays: [X2]
+      notes:
+        - "영향평가는 지정 평가기관이 수행한다. 본 도구는 평가 입력자료만 준비한다"
+
+  - id: SR-DB-STANDARD
+    desc: "데이터베이스 포함 사업은 표준화 지침이 적용된다"
+    standard_ref: "공공기관의 데이터베이스 표준화 지침"
+    if:
+      db_included: true
+    then:
+      add_standards: ["공공기관의 데이터베이스 표준화 지침"]
+      add_artifacts: [DB-KR-01]
+
+  - id: SR-PUBLIC-DATA
+    desc: "공공데이터 개방 대상은 메타데이터 등록이 필요하다"
+    standard_ref: "공공데이터법"
+    if:
+      public_data: true
+    then:
+      add_standards: ["공공데이터법"]
+      add_artifacts: [DB-KR-02]
+
+  - id: SR-EGOV-FW
+    desc: "표준프레임워크 적용 사업은 준수 확인서가 필요하다"
+    standard_ref: "전자정부 표준프레임워크"
+    if:
+      egov_framework: true
+    then:
+      add_standards: ["전자정부 표준프레임워크"]
+      add_artifacts: [FW-01]
+
+  - id: SR-FP
+    desc: "기능점수 대가산정은 산정서와 추적축이 필요하다"
+    standard_ref: "SW사업 대가산정 가이드"
+    if:
+      fp_estimation: true
+    then:
+      add_standards: ["SW사업 대가산정 가이드", "ISO/IEC 20926"]
+      add_artifacts: [FP-01]
+      add_trace_rules:
+        - from: function_point
+          to: requirement
+          relation: derives_from
+          required: true
+
+  - id: SR-CLOUD
+    desc: "클라우드 배포는 보안인증 확인이 필요하다"
+    standard_ref: "CSAP"
+    if:
+      cloud_deployment: true
+    then:
+      add_standards: ["CSAP"]
+      add_artifacts: [CL-01]
+      require_overlays: [X4]
+
+  - id: SR-MIGRATION
+    desc: "데이터 전환이 있으면 전환 설계서가 필요하다"
+    standard_ref: "CBD SW개발 표준 산출물 관리 가이드"
+    if:
+      data_migration: true
+    then:
+      add_artifacts: [DE-12]
+
+  - id: SR-MAINTENANCE
+    desc: "유지관리 사업은 구축 산출물 대신 유지관리 요구사항 체계를 쓴다"
+    standard_ref: "행정안전부고시 제2023-27호"
+    if:
+      project_type: 유지관리
+    then:
+      drop_artifacts: [DE-08, DE-09, DE-12, IM-03, TE-05]
+      notes:
+        - "유지관리 사업은 요구사항 분류에 MAR(유지관리수행)·MHR(유지관리인력)이 추가된다"
+        - "기존 시스템 산출물이 있으면 갱신 대상만 생성하도록 범위를 좁혀야 한다"
+
+minimum_set:
+  - "전자정부법"
+  - "행정안전부고시 제2023-27호"
+  - "CBD SW개발 표준 산출물 관리 가이드"
+  - "소프트웨어 진흥법"
+  - "ISO/IEC/IEEE 29148:2018"
+
+conflict_rules:
+  - "행안부 고시와 CBD 가이드가 상충하면 고시가 우선한다. CBD 가이드는 양식 참조 자료다"
+  - "산출물 양식과 항목은 프로젝트 특성에 맞게 수정·추가할 수 있으나, 요구사항추적표와 과업대비표는 감리 필수 제출물이므로 생략하지 않는다"
+  - "요구사항추적표(AN-03)와 과업대비표(AU-01)는 목적이 다르다. AN-03은 요구사항→설계→시험의 내부 추적이고, AU-01은 RFP 요구사항→산출물의 계약 이행 증명이다. 하나로 합치지 않는다"
+  - "발주기관이 자체 방법론을 보유한 경우 그 방법론이 우선하며, 본 프로파일은 포크하여 조직 레이어로 사용한다"

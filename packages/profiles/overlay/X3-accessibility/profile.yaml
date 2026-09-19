@@ -1,0 +1,106 @@
+schema_version: "1.0"
+id: X3-accessibility
+kind: overlay
+name: 접근성·국제화 오버레이
+description: >
+  사용자 인터페이스를 가진 시스템에 중첩 적용된다. 공공 시스템은
+  지능정보화 기본법에 따라 웹 접근성이 법적 의무다.
+status: beta
+
+activation:
+  any_of:
+    - { signal: file_glob,  match: "**/*.html|**/*.jsx|**/*.tsx|**/*.vue|**/*.svelte", weight: 0.40 }
+    - { signal: dependency, match: "react|vue|svelte|angular|next|nuxt", weight: 0.35 }
+    - { signal: keyword,    match: "aria-|role=\"|alt=", weight: 0.25 }
+  manual_override: allowed
+
+standards_add:
+  - id: "KWCAG 2.2"
+    name_ko: "한국형 웹 콘텐츠 접근성 지침"
+    issuer: "한국지능정보사회진흥원"
+    layer: ks
+    enforcement: L2
+    legal_basis:
+      law: "지능정보화 기본법"
+      ministry: "과학기술정보통신부"
+    scope: [requirements, design, test]
+    role: checklist_source
+    artifacts: ["웹 접근성 점검표", "접근성 품질인증 신청 자료"]
+    audit_body: "웹 접근성 품질인증기관"
+    lifecycle: any
+    status: current
+    confidence: medium
+    note: "최신 개정 버전 확인 필요 (KWCAG 2.1 / 2.2)"
+
+  - id: "WCAG 2.2"
+    name_ko: "웹 콘텐츠 접근성 지침"
+    issuer: "W3C"
+    layer: de_facto
+    enforcement: L4
+    scope: [requirements, design, test]
+    role: checklist_source
+    audit_body: null
+    lifecycle: any
+    edition_year: 2023
+    status: current
+    confidence: high
+
+  - id: "모바일 앱 접근성 지침"
+    name_ko: "모바일 애플리케이션 접근성 지침"
+    issuer: "한국지능정보사회진흥원"
+    layer: ks
+    enforcement: L2
+    legal_basis:
+      law: "지능정보화 기본법"
+      ministry: "과학기술정보통신부"
+    risk_trigger:
+      condition: "system_type == mobile"
+    scope: [requirements, design, test]
+    audit_body: "웹 접근성 품질인증기관"
+    lifecycle: any
+    status: current
+    confidence: medium
+
+artifacts_add:
+  - id: AX-01
+    name: 웹 접근성 점검표
+    phase: 접근성
+    required: true
+    derivable: A
+    standard_refs: ["KWCAG 2.2"]
+  - id: AX-02
+    name: 접근성 요구사항 명세
+    phase: 접근성
+    required: true
+    derivable: B
+    standard_refs: ["KWCAG 2.2", "WCAG 2.2"]
+  - id: AX-03
+    name: 접근성 품질인증 신청 자료
+    phase: 접근성
+    required: false
+    derivable: C
+    conditional: true
+    standard_refs: ["KWCAG 2.2"]
+
+traceability_rules_add:
+  - from: requirement
+    to: usability_spec
+    relation: satisfies
+    required: false
+
+quality_gates_add:
+  - name: accessibility_violations
+    metric: kwcag_violation_count
+    threshold: 0
+    op: lte
+    blocking: true
+
+lint_rules_add:
+  - id: AX-LINT-01
+    desc: "화면을 다루는 요구사항에 접근성 기준이 명시되지 않았다"
+    severity: warning
+    applies_to: [requirement]
+    standard_ref: "KWCAG 2.2"
+
+conflict_rules:
+  - "KWCAG와 WCAG가 상충하면 국내 납품물은 KWCAG를 따른다"

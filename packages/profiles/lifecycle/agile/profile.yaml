@@ -1,0 +1,88 @@
+schema_version: "1.0"
+id: agile
+kind: lifecycle
+name: 애자일 생명주기
+description: >
+  산출물이 문서가 아니라 백로그다. Epic → Feature → Story → AC → Test → Code로
+  추적되며, 단계 게이트 대신 Definition of Done으로 검증한다.
+status: stable
+
+lifecycle: agile
+
+id_scheme:
+  epic: "EP-{n:02d}"
+  feature: "FE-{n:03d}"
+  story: "US-{n:03d}"
+  requirement: "US-{n:03d}"
+  acceptance_criterion: "AC-{story_id}-{n:02d}"
+  testcase: "TC-{story_id}-{n:02d}"
+
+artifacts_add:
+  - id: AG-BL
+    name: 제품 백로그
+    required: true
+    derivable: B
+    prompt: prompts/extract-backlog.md
+  - id: AG-AC
+    name: 인수조건 (Gherkin)
+    required: true
+    derivable: B
+    prompt: prompts/generate-gherkin.md
+  - id: AG-ADR
+    name: 아키텍처 결정 기록
+    required: true
+    derivable: B
+  - id: AG-DOD
+    name: Definition of Done
+    required: true
+    derivable: C
+
+traceability_rules_add:
+  - from: story
+    to: acceptance_criterion
+    relation: derives_from
+    required: true
+  - from: acceptance_criterion
+    to: testcase
+    relation: verifies
+    required: true
+  - from: story
+    to: code_symbol
+    relation: implements
+    required: true
+  - from: code_symbol
+    to: commit
+    relation: documents
+    required: false
+
+quality_gates_add:
+  - name: invest_compliance
+    metric: story_invest_pass_ratio
+    threshold: 0.80
+    op: gte
+    blocking: false
+  - name: ac_coverage
+    metric: story_with_ac_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+
+lint_rules_add:
+  - id: AG-LINT-01
+    desc: "사용자 스토리가 역할-행위-가치 형식이 아니다"
+    severity: warning
+    applies_to: [story]
+  - id: AG-LINT-02
+    desc: "인수조건이 Given-When-Then 구조가 아니다"
+    severity: error
+    applies_to: [acceptance_criterion]
+
+output_formats: [md, docx, csv]
+output_default: md
+
+context_schema:
+  board_export:
+    type: enum
+    values: [jira, azure-boards, github-projects, none]
+    default: none
+    desc: 백로그 내보내기 대상

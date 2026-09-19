@@ -1,0 +1,415 @@
+schema_version: "1.0"
+profile: D04-medical
+name: D04 의료 프로파일 골든셋
+description: >
+  리졸버 조건 분기와 요구사항 추출 품질을 회귀 검증하는 기준 케이스.
+  resolution 케이스는 리졸버 단독으로 검증 가능하며, extraction 케이스는
+  기준 저장소가 준비된 뒤에 활성화한다.
+
+# ---------------------------------------------------------------------------
+# A. 리졸버 조건 분기 검증 (기준 저장소 불필요, 즉시 실행 가능)
+# ---------------------------------------------------------------------------
+resolution_cases:
+  - id: RC-01
+    name: "Class A 독립형 최소 구성"
+    context:
+      safety_class: "A"
+      form: "standalone"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    expect:
+      fired_rules: [SR-CLASS-A, SR-FORM-STANDALONE]
+      artifacts_include: [MD-REQ-02, MD-REQ-03]
+      artifacts_exclude: [MD-DES-02, MD-TST-01, MD-AI-01, MD-SEC-01, MD-DES-03]
+      standards_include:
+        - "디지털의료기기소프트웨어 허가·심사 가이드라인"
+        - "독립형 디지털의료기기소프트웨어 사용적합성 가이드라인"
+      standards_exclude:
+        - "의료기기 소프트웨어 허가·심사 가이드라인"
+      overlays_required: []
+
+  - id: RC-02
+    name: "Class C 내장형 — 상세설계·단위검증 강제"
+    context:
+      safety_class: "C"
+      form: "embedded"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    expect:
+      fired_rules: [SR-CLASS-C, SR-FORM-STANDALONE_ELSE]
+      artifacts_include: [MD-DES-02, MD-TST-01]
+      artifacts_exclude: [MD-REQ-03, MD-AI-01]
+      standards_include:
+        - "의료기기 소프트웨어 허가·심사 가이드라인"
+      standards_exclude:
+        - "디지털의료기기소프트웨어 허가·심사 가이드라인"
+      gates_include: [unit_verification_coverage]
+
+  - id: RC-03
+    name: "Class B 독립형 + AI + 네트워크 — 오버레이 2종 발동"
+    context:
+      safety_class: "B"
+      form: "standalone"
+      ai_applied: true
+      generative_ai: false
+      network_connected: true
+      uses_soup: false
+      procurement: ["민간B2B"]
+    expect:
+      fired_rules: [SR-CLASS-B, SR-FORM-STANDALONE, SR-AI, SR-NETWORK]
+      artifacts_include: [MD-TST-01, MD-AI-01, MD-AI-02, MD-AI-03, MD-SEC-01, MD-REQ-03]
+      artifacts_exclude: [MD-DES-02]
+      overlays_required: [X1, X2, X5]
+      trace_relations_include:
+        - "dataset->model_artifact:trains"
+        - "threat->security_control:mitigates"
+
+  - id: RC-04
+    name: "Class C 독립형 생성형AI DTx + SOUP + 수출 — 최대 구성"
+    context:
+      safety_class: "C"
+      form: "standalone"
+      ai_applied: true
+      generative_ai: true
+      network_connected: true
+      uses_soup: true
+      is_dtx: true
+      xr_applied: false
+      procurement: ["민간B2B", "수출-미국", "수출-EU"]
+    expect:
+      fired_rules:
+        - SR-CLASS-C
+        - SR-FORM-STANDALONE
+        - SR-AI
+        - SR-GENAI
+        - SR-NETWORK
+        - SR-SOUP
+        - SR-DTX
+        - SR-EXPORT-US
+        - SR-EXPORT-EU
+      artifacts_include:
+        - MD-DES-02
+        - MD-DES-03
+        - MD-TST-01
+        - MD-AI-01
+        - MD-AI-02
+        - MD-AI-03
+        - MD-SEC-01
+        - MD-REQ-03
+        - MD-EXP-US1
+        - MD-EXP-EU1
+        - MD-EXP-MAP
+      standards_include:
+        - "생성형 AI 의료기기 허가·심사 가이드라인"
+        - "디지털치료기기 허가·심사 가이드라인"
+        - "디지털치료기기 임상시험 설계 가이드라인"
+        - "21 CFR Part 11"
+        - "EU MDR 2017/745"
+      overlays_required: [X1, X2, X5]
+
+  - id: RC-05
+    name: "Class A인데 SOUP 사용 — 등급과 무관한 규칙 독립 발동 확인"
+    context:
+      safety_class: "A"
+      form: "embedded"
+      ai_applied: false
+      network_connected: false
+      uses_soup: true
+      procurement: ["민간B2B"]
+    expect:
+      fired_rules: [SR-CLASS-A, SR-FORM-STANDALONE_ELSE, SR-SOUP]
+      artifacts_include: [MD-DES-03]
+      artifacts_exclude: [MD-DES-02, MD-TST-01]
+      overlays_required: [X5]
+      note: "relax와 add가 서로 다른 산출물에 작용하므로 충돌하지 않아야 한다"
+
+  - id: RC-06
+    name: "등급 누락 — 필수 컨텍스트 미제공 시 거부"
+    context:
+      form: "standalone"
+      ai_applied: false
+    expect:
+      error: "missing_required_context"
+      error_detail_contains: ["safety_class"]
+
+  - id: RC-07
+    name: "잘못된 등급 값 — enum 위반"
+    context:
+      safety_class: "D"
+      form: "standalone"
+    expect:
+      error: "invalid_context_value"
+      error_detail_contains: ["safety_class", "D"]
+
+  - id: RC-08
+    name: "Agile 생명주기 선택 — lifecycle_options 위반 거부"
+    lifecycle: agile
+    context:
+      safety_class: "B"
+      form: "standalone"
+    expect:
+      error: "lifecycle_not_allowed"
+      error_detail_contains: ["agile", "D04-medical"]
+
+  # --- 변이 테스트로 드러난 공백을 메우는 케이스 -----------------------------
+
+  - id: RC-09
+    name: "relax와 add가 같은 산출물에 충돌 — strictest-wins 확인"
+    # SR-CLASS-A는 MD-TST-01을 완화하지만, 프로젝트 규칙이 이를 필수화한다.
+    # 조직·프로젝트 포크가 규제보다 엄격한 내부 기준을 둘 때 발생하는 상황이다.
+    # 완화가 나중에 평가되더라도 필수화를 덮어써서는 안 된다.
+    context:
+      safety_class: "A"
+      form: "standalone"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    project_overrides:
+      selection_rules:
+        - id: SR-ORG-STRICT
+          desc: "사내 기준 — 등급 무관 단위 검증 기록 필수"
+          if:
+            form: "standalone"
+          then:
+            add_artifacts: [MD-TST-01]
+    expect:
+      fired_rules: [SR-CLASS-A, SR-FORM-STANDALONE, SR-ORG-STRICT]
+      artifacts_include: [MD-TST-01]
+      artifacts_exclude: [MD-DES-02]
+      rule_trace_include:
+        - { rule: SR-CLASS-A, action: relax_skipped, target: MD-TST-01 }
+
+  - id: RC-10
+    name: "Class A 완화 — 목록 제외가 아니라 선택항목 강등인지 확인"
+    # SR-CLASS-A의 relax는 '없애기'가 아니라 '필수 해제'다.
+    # 조건부 산출물(미활성)과 완화된 산출물(활성이나 선택)은 다른 상태다.
+    context:
+      safety_class: "A"
+      form: "embedded"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    project_overrides:
+      selection_rules:
+        - id: SR-PRE-ACTIVATE
+          desc: "완화 대상을 먼저 활성화해 relax의 동작을 관찰한다"
+          if:
+            form: "embedded"
+          then:
+            add_artifacts: [MD-DES-02]
+    expect:
+      fired_rules: [SR-CLASS-A, SR-PRE-ACTIVATE]
+      # SR-PRE-ACTIVATE가 필수화한 뒤 SR-CLASS-A가 완화를 시도하나,
+      # strictest-wins에 따라 필수가 유지된다
+      artifacts_include: [MD-DES-02]
+      rule_trace_include:
+        - { rule: SR-CLASS-A, action: relax_skipped, target: MD-DES-02 }
+
+  - id: RC-12
+    name: "표준 강제성 충돌 — 엄격한 쪽이 유지되는지 확인"
+    # 조직·프로젝트 레이어가 같은 표준을 낮은 강제성으로 재선언해도
+    # 상위 규범의 강제성이 내려가서는 안 된다.
+    context:
+      safety_class: "B"
+      form: "standalone"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    project_overrides:
+      standards_add:
+        # 방향 1 — 높은 강제성이 먼저, 낮은 것이 나중. 낮은 쪽이 이기면 안 된다.
+        - id: "ISO 14971:2019"
+          name_ko: "의료기기 - 위험관리의 의료기기 적용"
+          enforcement: L4
+          layer: international
+          audit_body: "사내 검토"
+        - id: "디지털의료제품법"
+          name_ko: "디지털의료제품법"
+          enforcement: L3
+          layer: law
+        # 방향 2 — 낮은 강제성이 먼저(_base의 L4), 높은 것이 나중.
+        # 나중 것이 이겨야 한다. 방향 1만 시험하면 '항상 먼저 것 유지' 버그를 놓친다.
+        - id: "ISO/IEC/IEEE 29148:2018"
+          name_ko: "시스템 및 소프트웨어 공학 - 생명주기 프로세스 - 요구공학"
+          enforcement: L2
+          layer: procurer
+          audit_body: "발주처 검수"
+    expect:
+      standards_enforcement:
+        "ISO 14971:2019": "L2"
+        "디지털의료제품법": "L1"
+        "ISO/IEC/IEEE 29148:2018": "L2"
+
+  - id: RC-15
+    name: "조건부 표준이 미적용 시 준거 목록에서 빠지는지 확인"
+    # 수출하지 않는 프로젝트의 작업지시서에 21 CFR Part 11이 남으면
+    # 준거 목록이 실제 의무를 반영하지 못한다.
+    context:
+      safety_class: "B"
+      form: "standalone"
+      ai_applied: false
+      generative_ai: false
+      network_connected: false
+      uses_soup: false
+      is_dtx: false
+      xr_applied: false
+      procurement: ["민간B2B"]
+    expect:
+      standards_include:
+        - "디지털의료제품법"
+        - "IEC 62304:2006+AMD1:2015"
+        - "ISO 14971:2019"
+        - "디지털의료기기소프트웨어 허가·심사 가이드라인"
+      standards_absent:
+        - "21 CFR Part 11"
+        - "EU MDR 2017/745"
+        - "생성형 AI 의료기기 허가·심사 가이드라인"
+        - "디지털치료기기 허가·심사 가이드라인"
+        - "의료기기 사이버보안 가이드라인"
+        - "인공지능기술이 적용된 디지털의료기기 허가·심사 가이드라인"
+      standards_deferred:
+        - "21 CFR Part 11"
+        - "EU MDR 2017/745"
+
+  - id: RC-16
+    name: "미국 수출 추가 시 해당 표준만 준거 목록에 들어오는지 확인"
+    context:
+      safety_class: "B"
+      form: "standalone"
+      ai_applied: false
+      generative_ai: false
+      network_connected: false
+      uses_soup: false
+      is_dtx: false
+      xr_applied: false
+      procurement: ["민간B2B", "수출-미국"]
+    expect:
+      fired_rules: [SR-EXPORT-US]
+      standards_include: ["21 CFR Part 11"]
+      standards_absent: ["EU MDR 2017/745"]
+      artifacts_include: [MD-EXP-US1, MD-EXP-MAP]
+      artifacts_exclude: [MD-EXP-EU1]
+
+  - id: RC-14
+    name: "drop과 add가 같은 산출물에 충돌 — add가 이기는지 확인"
+    # 편의를 위한 제거 규칙이 규제가 요구한 산출물을 지워서는 안 된다.
+    # 규칙 평가 순서와 무관하게 성립해야 한다.
+    context:
+      safety_class: "C"
+      form: "embedded"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    project_overrides:
+      selection_rules:
+        - id: SR-ORG-TRIM
+          desc: "사내 간소화 규칙 — 상세 설계서 생략 시도"
+          if:
+            form: "embedded"
+          then:
+            drop_artifacts: [MD-DES-02, MD-PLN-03]
+    expect:
+      fired_rules: [SR-CLASS-C, SR-ORG-TRIM]
+      # SR-CLASS-C가 필수화한 MD-DES-02는 제거되지 않는다
+      artifacts_include: [MD-DES-02]
+      # 어떤 규칙도 필수화하지 않은 MD-PLN-03은 제거된다
+      artifacts_exclude: [MD-PLN-03]
+      rule_trace_include:
+        - { rule: SR-ORG-TRIM, action: drop_skipped, target: MD-DES-02 }
+        - { rule: SR-ORG-TRIM, action: drop_artifact, target: MD-PLN-03 }
+
+  - id: RC-13
+    name: "게이트 임계치 충돌 — 엄격한 쪽이 유지되는지 확인"
+    # _base의 앵커율 0.85와 D04의 0.90이 충돌하면 0.90이 남아야 한다.
+    context:
+      safety_class: "A"
+      form: "standalone"
+      ai_applied: false
+      network_connected: false
+      uses_soup: false
+      procurement: ["민간B2B"]
+    project_overrides:
+      quality_gates_add:
+        - name: evidence_anchor_rate
+          metric: anchor_rate
+          threshold: 0.50
+          op: gte
+    expect:
+      gate_thresholds:
+        evidence_anchor_rate: 0.90
+
+  - id: RC-11
+    name: "조건부 산출물 미활성 시 목록에서 완전히 제외되는지 확인"
+    # 활성화되지 않은 조건부 산출물이 선택항목으로 남으면 작업지시서가 흐려진다.
+    context:
+      safety_class: "B"
+      form: "embedded"
+      ai_applied: false
+      generative_ai: false
+      network_connected: false
+      uses_soup: false
+      is_dtx: false
+      xr_applied: false
+      procurement: ["민간B2B"]
+    expect:
+      fired_rules: [SR-CLASS-B, SR-FORM-STANDALONE_ELSE]
+      artifacts_include: [MD-TST-01]
+      artifacts_exclude:
+        - MD-REQ-03
+        - MD-DES-02
+        - MD-DES-03
+        - MD-AI-01
+        - MD-AI-02
+        - MD-AI-03
+        - MD-SEC-01
+        - MD-EXP-US1
+        - MD-EXP-EU1
+        - MD-EXP-MAP
+
+# ---------------------------------------------------------------------------
+# B. 요구사항 추출 품질 검증 (기준 저장소 준비 후 활성화)
+# ---------------------------------------------------------------------------
+extraction_cases:
+  - id: EC-01
+    name: "임계치 경고 로직에서 기능 요구사항 복원"
+    status: pending_fixture
+    fixture: fixtures/alert-engine/
+    context:
+      safety_class: "B"
+      form: "standalone"
+    expect:
+      min_requirements: 3
+      must_contain_patterns:
+        - "임계치"
+        - "경고"
+      anchor_rate_gte: 0.90
+      lint_error_count: 0
+      forbidden_patterns:
+        - "적절히"
+        - "신속하게"
+        - "정확도"
+        - "진단한다"
+
+  - id: EC-02
+    name: "임상 주장 생성 금지 확인"
+    status: pending_fixture
+    fixture: fixtures/classifier/
+    context:
+      safety_class: "C"
+      form: "standalone"
+      ai_applied: true
+    expect:
+      forbidden_patterns:
+        - "정확도 \\d+%"
+        - "진단할 수 있다"
+        - "임상적으로 유효"
+      all_requirements_have:
+        - needs_human_confirmation

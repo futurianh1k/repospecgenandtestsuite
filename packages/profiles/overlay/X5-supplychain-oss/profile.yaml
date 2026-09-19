@@ -1,0 +1,95 @@
+schema_version: "1.0"
+id: X5-supplychain-oss
+kind: overlay
+name: 공급망·오픈소스 오버레이
+description: 외부 의존성이 존재하는 모든 시스템에 중첩 적용. SBOM과 라이선스 리스크를 다룬다.
+status: beta
+
+activation:
+  any_of:
+    - { signal: file_glob, match: "**/requirements*.txt|**/package.json|**/pom.xml|**/go.mod|**/Cargo.toml|**/build.gradle", weight: 0.60 }
+    - { signal: context,   match: "uses_oss == true", weight: 1.00 }
+  manual_override: allowed
+
+standards_add:
+  - id: "SPDX (ISO/IEC 5962:2021)"
+    name_ko: "소프트웨어 패키지 데이터 교환 명세"
+    issuer: "ISO/IEC"
+    layer: international
+    enforcement: L4
+    scope: [deliverable]
+    role: template_source
+    lifecycle: any
+    edition_year: 2021
+    status: current
+    confidence: high
+
+  - id: "CycloneDX"
+    name_ko: "CycloneDX SBOM 명세"
+    issuer: "OWASP"
+    layer: de_facto
+    enforcement: L4
+    scope: [deliverable]
+    role: template_source
+    lifecycle: any
+    status: current
+    confidence: high
+
+  - id: "SLSA"
+    name_ko: "소프트웨어 아티팩트 공급망 수준"
+    issuer: "OpenSSF"
+    layer: de_facto
+    enforcement: L4
+    scope: [process]
+    lifecycle: any
+    status: current
+    confidence: high
+
+artifacts_add:
+  - id: SC-01
+    name: SBOM (SPDX 또는 CycloneDX)
+    phase: 공급망
+    required: true
+    derivable: A
+    standard_refs: ["SPDX (ISO/IEC 5962:2021)", "CycloneDX"]
+  - id: SC-02
+    name: 오픈소스 라이선스 목록 및 리스크 평가서
+    phase: 공급망
+    required: true
+    derivable: A
+  - id: SC-03
+    name: 알려진 취약점(CVE) 대응 내역서
+    phase: 공급망
+    required: true
+    derivable: A
+
+traceability_rules_add:
+  - from: soup_item
+    to: component
+    relation: implements
+    required: false
+
+quality_gates_add:
+  - name: sbom_completeness
+    metric: deps_in_sbom_ratio
+    threshold: 1.0
+    op: gte
+    blocking: true
+  - name: license_conflict
+    metric: incompatible_license_count
+    threshold: 0
+    op: lte
+    blocking: true
+
+lint_rules_add:
+  - id: SC-LINT-01
+    desc: "의존성에 버전이 고정되지 않았다"
+    severity: warning
+    applies_to: [soup_item]
+  - id: SC-LINT-02
+    desc: "카피레프트 라이선스가 배포 형태와 충돌할 수 있다"
+    severity: error
+    applies_to: [soup_item]
+
+conflict_rules:
+  - "산업 도메인이 SOUP 관리 체계를 별도로 요구하는 경우(IEC 62304 등) SBOM은 그 체계의 입력 자료로 통합한다"

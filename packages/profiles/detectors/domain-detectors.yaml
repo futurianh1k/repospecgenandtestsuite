@@ -1,0 +1,111 @@
+schema_version: "1.0"
+threshold_default: 0.50
+
+# 자동 프로파일 추천 엔진의 규칙 데이터.
+# 저장소 스캔 결과에서 신호를 찾아 도메인과 컨텍스트 변수를 추천한다.
+# 추천이지 확정이 아니다 — always_confirm 정책을 참조하라.
+
+detectors:
+  - domain: D04-medical
+    signals:
+      - { type: dependency, pattern: "pydicom|hl7|fhir|dcm4che|highdicom|nibabel", weight: 0.40 }
+      - { type: keyword,    pattern: "DICOM|HL7|FHIR|EMR|PACS|SNOMED|LOINC",      weight: 0.30 }
+      - { type: keyword,    pattern: "IEC[ ]?62304|ISO[ ]?14971|SaMD|안전성 등급",  weight: 0.35 }
+      - { type: file_glob,  pattern: "**/dicom/**|**/hl7/**|**/fhir/**",           weight: 0.25 }
+      - { type: keyword,    pattern: "patient|환자|진단|처방|투약",                  weight: 0.20 }
+    threshold: 0.50
+    # 도메인이 추천되면 컨텍스트 변수도 함께 추정한다.
+    # 추정값은 전부 사용자 확인 대기 상태로 제시된다.
+    context_hints:
+      - context: form
+        rules:
+          - { if_signal: { type: dependency, pattern: "pyserial|smbus|RPi\\.GPIO|libusb" }, suggest: embedded }
+          - { if_signal: { type: file_glob,  pattern: "**/firmware/**|**/hal/**" },        suggest: embedded }
+          - { default: standalone }
+        confidence: low
+        note: "독립형/내장형 판정은 허가 경로를 바꾸므로 반드시 사용자 확인이 필요하다"
+
+      - context: ai_applied
+        rules:
+          - { if_signal: { type: dependency, pattern: "torch|tensorflow|onnxruntime|scikit-learn" }, suggest: true }
+          - { if_signal: { type: file_glob,  pattern: "**/*.onnx|**/*.pt|**/*.safetensors" },        suggest: true }
+          - { default: false }
+        confidence: high
+
+      - context: generative_ai
+        rules:
+          - { if_signal: { type: dependency, pattern: "openai|anthropic|langchain|llama-cpp|vllm" }, suggest: true }
+          - { if_signal: { type: keyword,    pattern: "prompt_template|system_prompt|chat_completion" }, suggest: true }
+          - { default: false }
+        confidence: high
+
+      - context: network_connected
+        rules:
+          - { if_signal: { type: dependency, pattern: "requests|httpx|aiohttp|fastapi|flask|django|express" }, suggest: true }
+          - { if_signal: { type: keyword,    pattern: "socket\\.|websocket|mqtt|grpc" }, suggest: true }
+          - { default: false }
+        confidence: high
+
+      - context: uses_soup
+        rules:
+          - { if_signal: { type: file_glob, pattern: "**/requirements*.txt|**/package.json|**/pom.xml|**/go.mod" }, suggest: true }
+          - { default: false }
+        confidence: high
+
+      - context: safety_class
+        rules:
+          - { default: null }
+        confidence: none
+        note: >
+          안전성 등급은 코드에서 추정하지 않는다. 등급은 제조사의 위험관리 활동
+          결과이며, 잘못 추정하면 산출물 범위 전체가 틀어진다. 반드시 사용자 입력을 받는다.
+
+      - context: is_dtx
+        rules:
+          - { default: null }
+        confidence: none
+        note: "디지털치료기기 해당 여부는 치료 작용기전의 과학적 근거 판단을 포함하므로 사용자 입력 필수"
+
+  - domain: D05-automotive
+    signals:
+      - { type: file_glob,  pattern: "**/*.dbc",                     weight: 0.35 }
+      - { type: file_glob,  pattern: "**/*.arxml",                   weight: 0.40 }
+      - { type: dependency, pattern: "socketcan|can-utils|autosar|cantools", weight: 0.30 }
+      - { type: keyword,    pattern: "ASIL[ _-]?[A-D]",              weight: 0.30 }
+    threshold: 0.50
+
+  - domain: D03-finance-kr
+    signals:
+      - { type: dependency, pattern: "iso8583|swift|fdc",            weight: 0.35 }
+      - { type: keyword,    pattern: "전자금융|계좌이체|가맹점|여신",   weight: 0.30 }
+      - { type: keyword,    pattern: "PCI[ -]?DSS|카드번호|CVV",      weight: 0.30 }
+    threshold: 0.50
+
+  - domain: D02-defense-kr
+    signals:
+      - { type: keyword,    pattern: "무기체계|방위사업청|국방규격|MIL-STD", weight: 0.40 }
+      - { type: keyword,    pattern: "MISRA|상호운용성 프로파일",           weight: 0.25 }
+    threshold: 0.50
+
+  - domain: D01-public-kr
+    signals:
+      - { type: dependency, pattern: "egovframe|egov",               weight: 0.45 }
+      - { type: file_glob,  pattern: "**/egovframework/**",          weight: 0.40 }
+      - { type: keyword,    pattern: "행정안전부|조달청|나라장터",      weight: 0.30 }
+    threshold: 0.45
+
+tie_breaking:
+  order: [D02, D04, D03, D06, D08, D05, D07, D09, D10, D01, D11, D12, D16, D15, D14, D13, D17, D18]
+  max_suggestions: 3
+
+policy:
+  always_confirm: true
+  # 규제 프로파일을 도구가 임의 확정하면 책임 소재가 무너진다.
+  # 추천까지만 하고 승인은 사람이 한다.
+  never_auto_infer:
+    - safety_class
+    - device_grade
+    - is_dtx
+    - procurement
+  # 위 변수들은 코드에서 추정하지 않는다. 잘못 추정하면 산출물 범위와
+  # 규제 요건이 통째로 틀어지고, 그 오류가 심사 제출물까지 전파된다.

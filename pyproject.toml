@@ -1,0 +1,19 @@
+[project]
+name = "repospec"
+version = "0.1.0"
+description = "GitHub 저장소를 역공학해 산업별 규제 프로파일에 맞춘 산출물을 생성한다"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # 프로파일 검증
+    "PyYAML>=6.0",
+    "jsonschema>=4.0",
+    # 문서 렌더러
+    "python-hwpx>=6.4.0",  # HWPX (OWPML). 한글 실물 검수 필요
+    "python-docx>=1.1.0",
+    "openpyxl>=3.1.0",
+]
+
+[tool.uv]
+# 설치 가능한 패키지가 아니라 스크립트 모음이다. 빌드 없이 의존성만 관리한다.
+package = false
